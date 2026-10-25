@@ -1,7 +1,10 @@
 # 小柯機器人跳棋遊戲
+<img width="1914" height="1079" alt="image" src="https://github.com/user-attachments/assets/1394e184-6cd4-4a81-8e5a-15b937461eab" />
+視頻示範
+
+https://github.com/user-attachments/assets/5b4cd40d-3b73-4479-a5a3-8311c30b73ae
 
 3D 中國跳棋桌面版（Windows 11／macOS）。
-
 **系統開發：吳玉柱 先生 與 Claude AI Opus 5.5**
 
 ## 玩法
