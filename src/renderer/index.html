@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-5xY7jflTAlHffw31YtTHdjSdKmm2Ra05XuGOgpvwYYY='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' app: blob: mediastream:; connect-src 'self' https: wss: ws: http:; worker-src 'self' blob:">
+<title>小柯機器人跳棋遊戲</title>
+<link rel="stylesheet" href="style.css">
+<script type="importmap">{"imports":{"three":"../../node_modules/three/build/three.module.js","three/addons/controls/":"./vendor/"}}</script>
+<script src="../../node_modules/peerjs/dist/peerjs.min.js"></script>
+<script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <!-- 首頁 -->
+  <section id="scr-home" class="screen on">
+    <div id="homeBody" class="home"></div>
+  </section>
+
+  <!-- 對局 -->
+  <section id="scr-game" class="screen">
+    <header class="topbar">
+      <button id="btnHome" class="ghost" title="回首頁">⟵ 首頁</button>
+      <div id="turnBanner" class="turn-banner">—</div>
+      <div class="top-right">
+        <div class="viewgroup">
+          <button id="viewTilt" class="viewbtn on" title="斜角視角">斜視</button>
+          <button id="viewTop" class="viewbtn" title="正上方俯視">俯視</button>
+          <button id="viewLow" class="viewbtn" title="低角度立體">立體</button>
+          <button id="btnRotate" class="viewbtn" title="轉到下一個角">⟳</button>
+        </div>
+        <button id="miniMusic" class="ghost mini-music">♫ 背景音樂</button>
+      </div>
+    </header>
+    <div class="game-body">
+      <aside class="left">
+        <div id="players" class="players"></div>
+        <div class="movebox">
+          <div class="movehead"><b>走法紀錄</b><span id="plyCount" class="muted small"></span></div>
+          <div id="moveList" class="movelist"></div>
+          <div id="aiInfo" class="muted small ai-info"></div>
+        </div>
+        <div class="actions play-only">
+          <button id="btnHint">💡 提示</button>
+          <button id="btnPause" class="aivai-only">⏸ 暫停</button>
+          <button id="btnUndo" class="ai-only">↶ 悔棋</button>
+          <button id="btnResign">🏳 認輸</button>
+          <button id="btnNew">新局</button>
+          <button id="btnExport">⤓ 匯出棋譜</button>
+        </div>
+        <div class="actions replay-only">
+          <button id="rpFirst" title="開局">⏮</button>
+          <button id="rpPrev" title="上一步（←）">◀</button>
+          <button id="rpPlay" title="自動播放">▶</button>
+          <button id="rpNext" title="下一步（→）">▶▶</button>
+          <button id="rpLast" title="終局">⏭</button>
+          <button id="rpExport">⤓ 匯出</button>
+        </div>
+      </aside>
+      <main id="boardWrap" class="board-wrap">
+        <div id="board" class="board"></div>
+        <div class="board-tip muted small">左鍵選棋子、再點落點（黃圈＝跳躍可到）．右鍵拖曳旋轉．滾輪縮放</div>
+      </main>
+      <aside class="right">
+        <nav class="tabs">
+          <button class="tab on" data-tab="advisor">🧙 軍師</button>
+          <button class="tab net-only" data-tab="chat">💬 對話</button>
+          <button class="tab" data-tab="music">♫ 音樂</button>
+        </nav>
+        <div id="pane-advisor" class="tabpane on"><div id="advisorPanel" class="advisor"></div></div>
+        <div id="pane-chat" class="tabpane">
+          <div id="voiceBar" class="voicebar">
+            <span id="voiceState">語音：未通話</span>
+            <button id="btnVoice" class="primary">🎤 加入語音</button>
+            <button id="btnMute" class="hidden">🔇 靜音</button>
+          </div>
+          <div id="memberList" class="members"></div>
+          <div id="chatLog" class="chatlog"></div>
+          <div class="chatsend"><input id="chatInput" placeholder="輸入訊息，Enter 送出" maxlength="500"><button id="chatSend">送出</button></div>
+          <div id="remoteAudios" class="hidden"></div>
+        </div>
+        <div id="pane-music" class="tabpane"><div id="musicPanel" class="music"></div></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- 棋譜庫 -->
+  <section id="scr-records" class="screen">
+    <div id="recordsBody" class="records"></div>
+  </section>
+</body>
+</html>

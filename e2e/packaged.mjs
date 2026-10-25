@@ -1,0 +1,30 @@
+// 打包後的程式冒煙測試：node e2e/packaged.mjs <exe 路徑> [截圖]
+import { _electron as electron } from 'playwright-core';
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
+const exe = process.argv[2];
+const shot = process.argv[3];
+fs.rmSync(path.join(process.env.APPDATA || os.homedir(), 'xiaoke-checkers-e2ePkg'), { recursive: true, force: true });
+const app = await electron.launch({ executablePath: exe, args: ['--profile=e2ePkg'] });
+const win = await app.firstWindow();
+const errors = [];
+win.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+win.on('pageerror', (e) => errors.push(e.message));
+await win.waitForSelector('#startAI', { timeout: 30000 });
+const tracks = await win.evaluate(() => window.xk.music.list().then((l) => l.length));
+await win.click('#startAI');
+await win.waitForTimeout(1200);
+const r = await win.evaluate(async () => {
+  const S = window.__xkc, b = window.__xkcBoard;
+  const m = S.game.legalMoves()[0];
+  b.onCellClick(m >> 7); b.onCellClick(m & 127);
+  for (let i = 0; i < 100 && S.game.moves.length < 2; i++) await new Promise((res) => setTimeout(res, 200));
+  const a = new Audio('app://local/assets/music/track05.mp3');
+  await a.play().catch(() => null);
+  await new Promise((res) => setTimeout(res, 1200));
+  return { moves: S.game.notes, audio: a.currentTime > 0.3, marbles: b.marbles.size, version: S.info.version, packaged: S.info.packaged };
+});
+if (shot) await win.screenshot({ path: shot });
+console.log(JSON.stringify({ tracks, ...r, errors }, null, 1));
+await app.close();
