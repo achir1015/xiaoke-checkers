@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">小柯跳棋</string>
+    <style name="AppTheme" parent="android:Theme.Material.NoActionBar">
+        <item name="android:colorPrimary">#2A1D12</item>
+        <item name="android:colorPrimaryDark">#1B1410</item>
+        <item name="android:colorAccent">#E8B84A</item>
+        <item name="android:statusBarColor">#1B1410</item>
+        <item name="android:navigationBarColor">#1B1410</item>
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+</resources>

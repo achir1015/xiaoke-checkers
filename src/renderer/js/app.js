@@ -76,6 +76,7 @@ async function init() {
   board = new Board3D($('#board'), { onCellClick });
   board.onHop = (k, n) => { if (k > 0 || n > 1) sfx.hop(k); };
   board.setView(S.settings.view || 'tilt');
+  $$('.viewbtn').forEach((b) => b.classList.toggle('on', b.id === 'view' + board.viewName[0].toUpperCase() + board.viewName.slice(1)));
   idleBoard();
 
   music = new MusicPlayer($('#musicPanel'), S.settings, (patch) => saveSettings(patch));
@@ -96,7 +97,8 @@ async function init() {
   advisor.setHasKey(S.settings.advisor.hasKey);
 
   bindUI();
-  if (document.documentElement.classList.contains('touch')) setupTouch();
+  if (document.documentElement.classList.contains('mobile')) setupMobile();
+  else if (document.documentElement.classList.contains('touch')) setupTouch();
   renderHome();
   showScreen('home');
   setInterval(tickClock, 500);
@@ -155,6 +157,36 @@ function bindUI() {
     if (e.key === 'ArrowLeft') replayGo(S.replay.ply - 1);
     if (e.key === 'ArrowRight') replayGo(S.replay.ply + 1);
   });
+}
+
+// 手機版（Android、iPhone 直立）：走法紀錄、軍師、對話、音樂收進底部的抽屜；點分頁打開、再點一次收起
+function setupMobile() {
+  document.body.classList.add('is-mobile');
+  const tabs = $('.right .tabs');
+  tabs.prepend(h('button', { class: 'tab', 'data-tab': 'moves' }, '📜 走法'));
+  const pane = h('div', { id: 'pane-moves', class: 'tabpane' });
+  pane.append($('.movebox'));
+  $('#pane-advisor').before(pane);
+  $$('.tab').forEach((t) => {
+    t.onclick = () => {
+      t.classList.remove('ping');
+      const open = document.body.classList.contains('sheet-open');
+      const same = t.classList.contains('on');
+      selectTab(t.dataset.tab);
+      document.body.classList.toggle('sheet-open', !(open && same));
+    };
+  });
+  // 點棋盤就收起抽屜
+  $('#boardWrap').addEventListener('pointerdown', () => document.body.classList.remove('sheet-open'));
+  // 手機返回鍵：先關對話框、抽屜，再回上一頁
+  window.__xkjBack = () => {
+    const m = $('.modal-back');
+    if (m) { const btns = m.querySelectorAll('.modal-btns button'); (btns[0] || btns[btns.length - 1]).click(); return true; }
+    if (document.body.classList.contains('sheet-open')) { document.body.classList.remove('sheet-open'); return true; }
+    if (S.screen === 'game') { leaveGame(); return true; }
+    if (S.screen === 'records') { showScreen('home'); return true; }
+    return false;
+  };
 }
 
 // iPad（電腦版版面、觸控螢幕）：沒有滑鼠右鍵與滾輪，提示改成手指操作
@@ -262,7 +294,7 @@ function enterIdle() {
     S.game = new Game(3);
     S.seats = [0, 1, 2].map((s) => ({ name: SEAT_NAMES[s], kind: 'watch' }));
     S.mySeat = -1;
-    document.body.className = '';
+    document.body.className = document.documentElement.classList.contains('mobile') ? 'is-mobile' : '';
     board.setPosition(S.game.board);
     board.setLastMove(null); board.setHint(-1); board.setSelected(-1); board.setTargets([]);
     board.setInteractive(false);
@@ -292,7 +324,7 @@ function setupGame(mode, n, seats, mySeat, opts = {}) {
   board.setPosition(g.board);
   board.setLastMove(null); board.setHint(-1); board.setSelected(-1); board.setPeerSelected(-1); board.setTargets([]);
   advisor.reset();
-  document.body.className = 'mode-' + mode;
+  document.body.className = 'mode-' + mode + (document.documentElement.classList.contains('mobile') ? ' is-mobile' : '');
   $('#aiInfo').textContent = '';
   if (mode !== 'net') { $('#chatLog').innerHTML = ''; $('#memberList').innerHTML = ''; }
   showScreen('game');
@@ -417,7 +449,7 @@ function updateGameUI() {
       h('span', { class: 'pchip marble' }),
       h('div', { class: 'pinfo' },
         h('div', {}, h('span', { class: 'pname' }, S.seats[s] ? S.seats[s].name : SEAT_NAMES[s]), h('span', { class: 'ptag' }, seatLabel(s))),
-        h('div', { class: 'pmeta' }, h('span', {}, `${SEAT_NAMES[s]}．到岸 ${inT}/${PIECES}`), h('span', { class: 'pclock', 'data-seat': s }, '0:00')),
+        h('div', { class: 'pmeta' }, h('span', { title: `到岸 ${inT}/${PIECES}` }, h('span', { class: 'pseat' }, `${SEAT_NAMES[s]}．`), h('span', { class: 'plabel' }, '到岸 '), `${inT}/${PIECES}`), h('span', { class: 'pclock', 'data-seat': s }, '0:00')),
         h('div', { class: 'pbar' }, h('i', { style: { width: Math.round((prog / 120) * 100) + '%' } }))));
     box.append(card);
   }
@@ -553,7 +585,7 @@ async function leaveGame() {
   stopReplayAuto();
   S.mode = null;
   S.game = null;
-  document.body.className = '';
+  document.body.className = document.documentElement.classList.contains('mobile') ? 'is-mobile' : '';
   idleBoard();
   renderHome();
   showScreen('home');
@@ -1245,7 +1277,10 @@ async function startUpdate(info) {
     await saveUnfinished();
     txt.textContent = info.flavor === 'mac' ? '下載完成，正在開啟安裝檔…' : '下載完成，正在安裝，程式會自動重新開啟…';
     const r = await xk.update.install(file);
-    if (r.manual) {
+    if (r.manual && r.android) {
+      box.remove();
+      await modal('請完成安裝', h('p', {}, '新版已下載完成，請在跳出的畫面按「安裝」（第一次會先請您允許安裝），棋譜與設定都會保留。'));
+    } else if (r.manual) {
       box.remove();
       await modal('請完成安裝', h('div', {},
         h('p', {}, '新版安裝檔已開啟（也放在「下載」資料夾）。'),

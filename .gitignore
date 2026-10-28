@@ -8,3 +8,6 @@ ios/web/
 ios/*.xcodeproj/
 ios/build/
 ios/XiaokeCheckers/Info.plist
+android/build/
+android/local.properties
+android/*.jks

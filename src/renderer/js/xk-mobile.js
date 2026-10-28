@@ -1,20 +1,29 @@
-// iPad 版（與一般瀏覽器）的 window.xk：取代桌面版主程序提供的功能。
+// 手機／平板版（Android、iPhone、iPad）與網頁版的 window.xk：取代桌面版主程序提供的功能。
 // 桌面版有 preload 提供 window.xk，這個檔案就什麼都不做。
-// iPad App 提供 window.XiaokeIOS＋webkit.messageHandlers.xkj（存檔分享、開網址、系統記錄）；在一般瀏覽器測試時改用網頁功能。
+// Android App 提供 window.XiaokeAndroid（存檔、檢查更新與安裝、開網址）；
+// iPhone／iPad App 提供 window.XiaokeIOS＋webkit.messageHandlers.xkj（存檔分享、開網址、系統記錄）；在一般瀏覽器測試時改用網頁功能。
 (function () {
   'use strict';
   if (window.xk) return;
+  var A = window.XiaokeAndroid || null;
+  var isAndroid = !!A;
   var isIOS = !!(window.XiaokeIOS && window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.xkj);
   function ios(cmd, args) { return window.webkit.messageHandlers.xkj.postMessage({ cmd: cmd, args: args || [] }); }
-  // iPad 的 WebView 用電腦版 UA（Macintosh），走電腦版版面；觸控螢幕加 html.touch
-  var touch = isIOS || navigator.maxTouchPoints > 1;
-  if (touch) document.documentElement.classList.add('touch');
-  document.documentElement.classList.add(isIOS ? 'ios' : 'webapp');
+  // 手機（Android、iPhone）直立版面：html.mobile；iPad 的 WebView 用電腦版 UA（Macintosh），走電腦版版面＋html.touch
+  var ua = navigator.userAgent || '';
+  var mobile = isAndroid || /Android|iPhone|Mobile/i.test(ua) || /[?&]mobile=1/.test(location.search);
+  var touch = mobile || isIOS || navigator.maxTouchPoints > 1;
+  if (mobile) document.documentElement.classList.add('mobile');
+  else if (touch) document.documentElement.classList.add('touch');
+  document.documentElement.classList.add(isAndroid ? 'android' : isIOS ? 'ios' : 'webapp');
 
   var REPO = 'achir1015/xiaoke-checkers';
   var IOS_INSTALL_PAGE = 'https://achir1015.github.io/xiaoke-checkers/ios/';
   function parse(s) { try { return JSON.parse(s); } catch (e) { return null; } }
-  function appVersion() { return window.XKJ_VERSION || '0'; }
+  function appVersion() {
+    if (isAndroid) { var i = parse(A.appInfo()); if (i && i.version) return i.version; }
+    return window.XKJ_VERSION || '0';
+  }
 
   // ---------------- 設定（localStorage） ----------------
   var SKEY = 'xkj.settings';
@@ -25,7 +34,7 @@
       stun: 'stun:stun.l.google.com:19302\nstun:stun.cloudflare.com:3478',
       turn: { urls: '', username: '', credential: '' },
       music: { volume: 0.45, shuffle: false, autoplay: true, track: 0, enabled: true },
-      sfx: true, view: 'tilt', autoUpdate: true,
+      sfx: true, view: mobile ? 'top' : 'tilt', autoUpdate: true,  // 手機直立時俯視棋盤最大
       advisor: { apiKey: '', model: 'claude-opus-5-5', effort: 'low' },
     };
   }
@@ -123,6 +132,14 @@
         return chain.then(function () { return ios('end_save', [b.token]); }).then(function (e) { return e && e.status === 'ok' ? e.path : ''; });
       });
     }
+    if (isAndroid) {
+      // 存到手機的「下載/小柯跳棋」
+      var sv = parse(A.beginSave(name));
+      if (!sv || sv.status !== 'ok') return Promise.reject(new Error((sv && sv.message) || '無法存檔'));
+      for (var k = 0; k < bytes.length; k += 512 * 1024) A.writeChunk(sv.token, b64(bytes.subarray(k, k + 512 * 1024)));
+      var e = parse(A.endSave(sv.token));
+      return Promise.resolve(e && e.path ? e.path : name);
+    }
     var a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([bytes], { type: 'text/plain;charset=utf-8' }));
     a.download = name;
@@ -130,8 +147,9 @@
     return Promise.resolve('下載資料夾／' + name);
   }
 
-  // ---------------- 版本更新（iPad：開線上安裝頁，用 Safari 按一下就裝好新版） ----------------
+  // ---------------- 版本更新（Android：下載 APK 安裝；iPhone／iPad：開線上安裝頁，用 Safari 按一下就裝好新版） ----------------
   var updInfo = null;
+  var progressFns = [];
   function cmpVer(a, b) {
     var pa = String(a).replace(/^v/, '').split('.').map(Number), pb = String(b).replace(/^v/, '').split('.').map(Number);
     for (var i = 0; i < 3; i++) { var d = (pa[i] || 0) - (pb[i] || 0); if (d) return d; }
@@ -139,6 +157,17 @@
   }
   function checkUpdate() {
     var cur = appVersion();
+    if (isAndroid) {
+      return new Promise(function (res, rej) {
+        setTimeout(function () {
+          var r = parse(A.checkUpdate());
+          if (!r || r.status !== 'ok') { rej(new Error((r && r.message) || '無法連線')); return; }
+          updInfo = { current: r.current, latest: r.latest, newer: cmpVer(r.latest, r.current) > 0, notes: r.notes || '', page: r.page,
+            asset: r.url ? { name: r.url.split('/').pop(), url: r.url, size: 0 } : null, flavor: 'android', canInstall: !!r.url };
+          res(updInfo);
+        }, 0);
+      });
+    }
     var done = function (latest, notes, page, ipa) {
       updInfo = { current: cur, latest: latest, newer: cmpVer(latest, cur) > 0, notes: notes || '', page: isIOS ? IOS_INSTALL_PAGE : page,
         asset: ipa ? { name: ipa.name, url: ipa.browser_download_url, size: ipa.size } : null, flavor: isIOS ? 'ios' : 'web', canInstall: false };
@@ -211,15 +240,34 @@
     } catch (err) { return { ok: false, error: explain(Anthropic, err) }; }
   }
 
-  function openUrl(url) { if (isIOS) ios('open_url', [url]); else window.open(url, '_blank'); }
+  function downloadUpdate() {
+    if (!isAndroid || !updInfo || !updInfo.asset) return Promise.reject(new Error('請到安裝頁更新'));
+    var r = parse(A.installUpdate(updInfo.asset.url, updInfo.latest));
+    if (!r || r.status !== 'ok') return Promise.reject(new Error((r && r.message) || '無法下載'));
+    return new Promise(function (res, rej) {
+      (function poll() {
+        var st = parse(A.updateStatus()) || {};
+        progressFns.forEach(function (f) { f({ got: st.pct || 0, total: 100 }); });
+        if (st.state === 'permission') rej(new Error('請先在設定畫面允許本 App「安裝未知應用程式」，回來後再按一次更新'));
+        else if (st.state === 'error') rej(new Error('下載失敗，請再試一次'));
+        else if (st.state === 'launching') res('android');
+        else setTimeout(poll, 500);
+      })();
+    });
+  }
+
+  function openUrl(url) { if (isAndroid) A.openUrl(url); else if (isIOS) ios('open_url', [url]); else window.open(url, '_blank'); }
+
+  // ---------------- 手機返回鍵（Android 原生呼叫） ----------------
+  window.__xkBack = function () { return window.__xkjBack ? !!window.__xkjBack() : false; };
 
   window.xk = {
     settings: { get: function () { return Promise.resolve(pub()); }, set: function (p) { return Promise.resolve(setSettings(p)); } },
     sys: {
-      info: function () { return Promise.resolve({ platform: isIOS ? 'ios' : 'web', arch: '', version: appVersion(), packaged: isIOS, profile: '', electron: '' }); },
+      info: function () { return Promise.resolve({ platform: isAndroid ? 'android' : isIOS ? 'ios' : 'web', arch: '', version: appVersion(), packaged: isAndroid || isIOS, profile: '', electron: '', mobile: mobile }); },
       askMicrophone: function () { return Promise.resolve(true); },
     },
-    win: { attention: function () { return Promise.resolve(); } },
+    win: { attention: function () { try { if (navigator.vibrate) navigator.vibrate([120, 60, 120]); } catch (e) { /* 不支援 */ } return Promise.resolve(); } },
     openExternal: function (url) { openUrl(url); return Promise.resolve(); },
     games: {
       save: function (rec) { var id = String(rec.id || '').replace(/[^\w.-]/g, '') || newId(); var data = Object.assign({}, rec, { id: id }); return tx('games', 'readwrite', function (s) { s.put(data); }).then(function () { return id; }); },
@@ -256,10 +304,10 @@
     },
     update: {
       check: checkUpdate,
-      download: function () { return Promise.reject(new Error('請到安裝頁更新')); },
-      install: function () { return Promise.resolve({ manual: true }); },
+      download: downloadUpdate,
+      install: function () { return Promise.resolve({ manual: true, android: isAndroid }); },
       openPage: function () { openUrl((updInfo && updInfo.page) || (isIOS ? IOS_INSTALL_PAGE : 'https://github.com/' + REPO + '/releases/latest')); return Promise.resolve(); },
-      onProgress: function () { return function () {}; },
+      onProgress: function (fn) { progressFns.push(fn); return function () { progressFns = progressFns.filter(function (f) { return f !== fn; }); }; },
     },
     advisor: {
       ask: function (id, payload) { ask(id, payload); },
@@ -268,7 +316,9 @@
       onDelta: function (fn) { deltaFns.push(fn); return function () { deltaFns = deltaFns.filter(function (f) { return f !== fn; }); }; },
       onDone: function (fn) { doneFns.push(fn); return function () { doneFns = doneFns.filter(function (f) { return f !== fn; }); }; },
     },
+    mobile: mobile,
     touch: touch,
+    android: isAndroid,
     ios: isIOS,
   };
 })();

@@ -4,7 +4,7 @@
 
 https://github.com/user-attachments/assets/5b4cd40d-3b73-4479-a5a3-8311c30b73ae
 
-3D 中國跳棋：桌面版（Windows 11／macOS）與 iPad 版。
+3D 中國跳棋：桌面版（Windows 11／macOS）、Android 手機版、iPhone／iPad 版。
 
 **系統開發：吳玉柱 先生 與 Claude AI Opus 5.5**
 
@@ -28,13 +28,18 @@ https://github.com/user-attachments/assets/5b4cd40d-3b73-4479-a5a3-8311c30b73ae
 
 其他：AI 軍師（本機 AI 分析，設定 Anthropic API 金鑰後由 Claude 白話解說）、20 首原創背景音樂（每首 3 分多鐘，可加入自己的音樂）、棋譜庫（自動收錄、重播、匯出、匯入）、版本自動更新。
 
-## iPad 版
+## 手機與平板
 
-- 安裝頁：<https://achir1015.github.io/xiaoke-checkers/ios/>（用 iPad 的 Safari 打開，按紅色「安裝到這台 iPad」）。電腦開這一頁會顯示 QR Code 讓 iPad 掃。
-- iPad 請橫放，畫面和電腦版相同；單指點棋子與落點，兩指拖曳旋轉、捏合縮放。
-- 可以和電腦版互相遠端對賽、觀棋、語音聊天（同一套連線方式）。
-- App Store 上架前，只能裝在開發者登記過的 iPad；第一次打開若要求「開發者模式」，到「設定 → 隱私權與安全性」打開。
-- 遊戲裡「關於 → 檢查更新」會開安裝頁更新，棋譜與設定保留。
+| 裝置 | 安裝 | 畫面 |
+|---|---|---|
+| Android 手機 | 在手機下載 Release 裡的 `XiaokeCheckers-版本-android.apk` 安裝（第一次要允許「安裝未知應用程式」） | 直立：上面玩家、中間棋盤、下面按鈕；走法／軍師／對話／音樂在底部抽屜 |
+| iPhone | 用 Safari 開 <https://achir1015.github.io/xiaoke-checkers/ios/> 按「安裝」 | 直立，同 Android |
+| iPad | 同上 | 橫放，和電腦版同一個畫面 |
+
+- 手指點棋子、再點落點；兩指拖曳旋轉、捏合縮放。手機預設俯視，棋盤最大。
+- 電腦、Android、iPhone、iPad 都能互相遠端對賽、觀棋、語音聊天（同一套連線方式）。
+- iPhone／iPad 版在 App Store 上架前，只能裝在開發者登記過的裝置；第一次打開若要求「開發者模式」，到「設定 → 隱私權與安全性」打開。
+- 遊戲裡「關於 → 檢查更新」：Android 直接下載新版 APK 安裝；iPhone／iPad 開安裝頁更新。棋譜與設定都會保留。
 
 ## AI
 
@@ -56,10 +61,14 @@ npm run e2e          # 端對端測試（單機＋三人連線）
 npm run dist:win     # 建置 Windows 安裝檔
 npm run music        # 重新產生 20 首背景音樂（需要 Python numpy/scipy 與 ffmpeg）
 npm run icon         # 重新產生圖示
-node scripts/build-mobile.mjs   # 產生 iPad 版網頁 mobile/www
+node scripts/build-mobile.mjs   # 產生手機／平板版網頁 mobile/www
 node e2e/ipad.mjs               # 用 Chrome 模擬 iPad 測試
+node e2e/mobile.mjs             # 用 Chrome 模擬 Android 手機與 iPhone 測試
+python android/build.py         # 建置 Android APK（不用 Gradle；debug install 會裝到接著的手機）
+node e2e/phone.mjs              # 實機測試（除錯版 APK）
+node e2e/cross.mjs              # 手機開房、電腦加入的互通測試
 ```
 
-iPad 版（ios/，XcodeGen）：在 Mac 上 `bash ios/sync.sh` 產生 Xcode 專案；`bash ios/build-ipa.sh`（要在 Mac 畫面的終端機執行）匯出 Ad Hoc 的 `xiaoke-checkers-ios.ipa`，上傳到 Release 後安裝頁就會裝到最新版（新版要改 `docs/ios/manifest.plist` 的 bundle-version）。
+iPhone／iPad 版（ios/，XcodeGen）：在 Mac 上 `bash ios/sync.sh` 產生 Xcode 專案；`bash ios/build-ipa.sh`（要在 Mac 畫面的終端機執行）匯出 Ad Hoc 的 `xiaoke-checkers-ios.ipa`，上傳到 Release 後安裝頁就會裝到最新版（新版要改 `docs/ios/manifest.plist` 的 bundle-version）。
 
 推送到 `main` 後，GitHub Actions 會自動建置 Windows 與 macOS 安裝檔並發佈 Release（版本號取自 `package.json`）；程式內的「關於與更新」會從 Release 下載新版。

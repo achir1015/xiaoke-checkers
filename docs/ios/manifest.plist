@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!-- iPad 線上安裝（itms-services）。.ipa 放在 GitHub Release，檔名固定 xiaoke-checkers-ios.ipa，所以永遠裝最新版 -->
+<!-- iPad／iPhone 線上安裝（itms-services）。.ipa 放在 GitHub Release，檔名固定 xiaoke-checkers-ios.ipa，所以永遠裝最新版 -->
 <plist version="1.0">
 <dict>
 	<key>items</key>
@@ -32,7 +32,7 @@
 				<key>bundle-identifier</key>
 				<string>com.achir.xiaokecheckers</string>
 				<key>bundle-version</key>
-				<string>1.1.0</string>
+				<string>1.2.0</string>
 				<key>kind</key>
 				<string>software</string>
 				<key>title</key>

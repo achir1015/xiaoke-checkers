@@ -2,10 +2,12 @@
 
 系統開發：吳玉柱 先生 與 Claude AI Opus 5.5
 
-**v1.1.0 新功能：iPad 版**
-- iPad 橫放、和電腦版同一個畫面；手指點棋子與落點，兩指旋轉、縮放
-- 可以和電腦版互相遠端對賽、觀棋、語音聊天
-- 線上安裝頁：https://achir1015.github.io/xiaoke-checkers/ios/
+**v1.2.0 新功能：Android 與 iPhone 手機版**
+- 手機直立畫面：上面玩家、中間棋盤（預設俯視，最大）、下面按鈕；走法、軍師、對話、音樂收在底部抽屜
+- Android 返回鍵：先關對話框與抽屜，再問要不要離開對局
+- 電腦、Android、iPhone、iPad 都能互相遠端對賽、觀棋、語音聊天
+
+**v1.1.0：iPad 版**（橫放、和電腦版同一個畫面）
 
 **功能**
 - 3D 六角星棋盤、玻璃彈珠，2～3 組參賽（紅、綠、藍）
@@ -21,6 +23,7 @@
 - **Windows 11**：`XiaokeCheckers-版本-win-x64.exe`（安裝版）或 `-portable.exe`（免安裝版）
 - **MacBook Pro（Apple 晶片 M1～M4）**：`XiaokeCheckers-版本-mac-arm64.dmg`
 - **Intel Mac**：`XiaokeCheckers-版本-mac-x64.dmg`
-- **iPad**：用 Safari 打開安裝頁 https://achir1015.github.io/xiaoke-checkers/ios/ 按「安裝」（`xiaoke-checkers-ios.ipa` 只能裝在開發者登記過的 iPad）
+- **Android 手機**：`XiaokeCheckers-版本-android.apk`（在手機上下載安裝，第一次要允許「安裝未知應用程式」）
+- **iPhone／iPad**：用 Safari 打開安裝頁 https://achir1015.github.io/xiaoke-checkers/ios/ 按「安裝」（`xiaoke-checkers-ios.ipa` 只能裝在開發者登記過的裝置）
 
 macOS 版未經 Apple 公證，第一次開啟請在 Finder 對程式按右鍵 →「打開」。

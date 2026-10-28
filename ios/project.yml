@@ -19,7 +19,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.achir.xiaokecheckers
-        TARGETED_DEVICE_FAMILY: "2"       # iPad（含 iPad Pro）
+        TARGETED_DEVICE_FAMILY: "1,2"     # iPhone 與 iPad（含 iPad Pro）
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: 7BN6XJ59KP      # Apple Developer Program（個人）；換帳號就改這裡
         GENERATE_INFOPLIST_FILE: NO
@@ -38,10 +38,9 @@ targets:
         UIViewControllerBasedStatusBarAppearance: false
         UIUserInterfaceStyle: Dark
         UIRequiresFullScreen: true
-        # iPad 橫放（電腦版版面：左邊棋手、中間棋盤、右邊軍師／對話／音樂）
+        # iPhone 直放（手機版面：上面玩家、中間棋盤、下面抽屜）；iPad 橫放（電腦版版面：左邊玩家、中間棋盤、右邊軍師／對話／音樂）
         UISupportedInterfaceOrientations:
-          - UIInterfaceOrientationLandscapeLeft
-          - UIInterfaceOrientationLandscapeRight
+          - UIInterfaceOrientationPortrait
         UISupportedInterfaceOrientations~ipad:
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight

@@ -62,7 +62,7 @@ export class AdvisorPanel {
     const path = findPath(g.board, f, t) || [f, t];
     const jumps = isStep(f, t) ? 0 : path.length - 1;
     const gain = g.prog[g.turn][t] - g.prog[g.turn][f];
-    const how = jumps ? `連跳 ${jumps} 次（經過 ${path.slice(1, -1).map(cellName).join('、') || '—'}）` : '走一步';
+    const how = jumps > 1 ? `連跳 ${jumps} 次（中途落在 ${path.slice(1, -1).map(cellName).join('、')}）` : jumps ? '跳 1 次' : '走一步';
     return `把 ${cellName(f)} 的棋子移到 ${cellName(t)}，${how}，${gain > 0 ? `前進 ${gain} 行` : gain < 0 ? `後退 ${-gain} 行` : '橫移'}`;
   }
 

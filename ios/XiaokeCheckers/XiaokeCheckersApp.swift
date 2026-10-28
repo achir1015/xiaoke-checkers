@@ -3,9 +3,9 @@ import SwiftUI
 import UIKit
 import WebKit
 
-/// 小柯機器人跳棋遊戲 — iPad 版
+/// 小柯機器人跳棋遊戲 — iPhone／iPad 版
 /// WKWebView 開啟 App 內建的遊戲網頁（和電腦版同一份程式），由 LocalServer 在 127.0.0.1 提供。
-/// iPad 橫放（電腦版版面）；下棋時螢幕保持亮著。App 被關掉時網頁一起結束：AI、音樂、語音通話全部停止。
+/// iPhone 直放（手機版面）、iPad 橫放（電腦版版面）；下棋時螢幕保持亮著。App 被關掉時網頁一起結束：AI、音樂、語音通話全部停止。
 @main
 struct XiaokeCheckersApp: App {
     init() {
@@ -43,7 +43,7 @@ final class Web: NSObject, WKScriptMessageHandlerWithReply, WKNavigationDelegate
         cfg.allowsInlineMediaPlayback = true
         cfg.mediaTypesRequiringUserActionForPlayback = []
         cfg.websiteDataStore = .default()
-        // 讓網頁知道自己在 iPad App 裡（js/xk-mobile.js 會改用 App 的存檔、開網址功能）
+        // 讓網頁知道自己在 iPhone／iPad App 裡（js/xk-mobile.js 會改用 App 的存檔、開網址功能）
         // 網頁的錯誤訊息轉到 iOS 系統記錄（除錯：log show --predicate 'process == "XiaokeCheckers"'）
         let shim = WKUserScript(source: """
             window.XiaokeIOS = true;

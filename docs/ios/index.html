@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>安裝小柯跳棋（iPad）</title>
+<title>安裝小柯跳棋（iPad／iPhone）</title>
 <link rel="apple-touch-icon" href="icon-180.png">
 <style>
   :root { --bg: #1b1410; --card: #2a1d12; --fg: #f3efe2; --dim: #b9c7bd; --gold: #e8c46a; --red: #c8302b; }
@@ -33,35 +33,35 @@
 <main>
   <div class="head">
     <img class="icon" src="icon-512.png" alt="小柯跳棋圖示">
-    <div><h1>小柯機器人跳棋遊戲</h1><p class="ver" id="ver">iPad 版</p></div>
+    <div><h1>小柯機器人跳棋遊戲</h1><p class="ver" id="ver">iPad／iPhone 版</p></div>
   </div>
-  <div class="pc">這一頁要在 <b>iPad 的 Safari</b> 打開才能安裝。<br>用 iPad 的相機掃這個 QR Code：<br><img src="qr.png" alt="安裝頁 QR Code"></div>
-  <div class="install"><a class="btn" href="itms-services://?action=download-manifest&amp;url=https://achir1015.github.io/xiaoke-checkers/ios/manifest.plist">安裝到這台 iPad</a>
+  <div class="pc">這一頁要在 <b>iPad／iPhone 的 Safari</b> 打開才能安裝。<br>用 iPad／iPhone 的相機掃這個 QR Code：<br><img src="qr.png" alt="安裝頁 QR Code"></div>
+  <div class="install"><a class="btn" href="itms-services://?action=download-manifest&amp;url=https://achir1015.github.io/xiaoke-checkers/ios/manifest.plist">安裝到這台 iPad／iPhone</a>
   <a class="sub" href="https://github.com/achir1015/xiaoke-checkers/releases/latest/download/xiaoke-checkers-ios.ipa">下載 .ipa 檔（給 Mac 的 Finder／Apple Configurator 用）</a></div>
   <div class="card">
     <h2>安裝步驟</h2>
     <ol>
-      <li>用 Safari 開這一頁，按上面紅色的「安裝到這台 iPad」，跳出視窗再按「安裝」。</li>
+      <li>用 Safari 開這一頁，按上面紅色的「安裝到這台 iPad／iPhone」，跳出視窗再按「安裝」。</li>
       <li>不用下載 .ipa 檔，也不用另外的 App，按了就會自動安裝。</li>
-      <li>回到主畫面，等「小柯跳棋」圖示的進度跑完。iPad 請橫放使用（和電腦版同一個畫面）。</li>
-      <li>第一次打開若顯示「需要開發者模式」：到「設定 → 隱私權與安全性」，拉到最下面打開「開發者模式」→ 按「重新啟動」→ 開機解鎖後在跳出的視窗按「開啟」並輸入密碼。每台 iPad 只要做一次。</li>
+      <li>回到主畫面，等「小柯跳棋」圖示的進度跑完。iPad 請橫放使用（和電腦版同一個畫面），iPhone 直放。</li>
+      <li>第一次打開若顯示「需要開發者模式」：到「設定 → 隱私權與安全性」，拉到最下面打開「開發者模式」→ 按「重新啟動」→ 開機解鎖後在跳出的視窗按「開啟」並輸入密碼。每台裝置只要做一次。</li>
       <li>以後有新版本，在遊戲裡按「關於 → 檢查更新」就會回到這一頁更新，棋譜與設定都會保留。</li>
     </ol>
   </div>
   <div class="card">
     <h2>可以安裝的裝置</h2>
-    <p style="margin:0">App Store 上架前，這個 .ipa 只能裝在開發者登記過的 iPad 上；其他裝置按安裝會顯示「無法安裝」。</p>
+    <p style="margin:0">App Store 上架前，這個 .ipa 只能裝在開發者登記過的 iPad／iPhone 上；其他裝置按安裝會顯示「無法安裝」。</p>
   </div>
   <footer>系統開發：吳玉柱 先生 與 Claude AI Opus 5.5</footer>
 </main>
 <script>
-  // 電腦開啟時多顯示 QR Code 讓 iPad 掃；
+  // 電腦開啟時多顯示 QR Code 讓 iPad／iPhone 掃；
   // iPad 的 Safari 預設送電腦版 UA（Macintosh），要用觸控點數判斷
   var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
   document.documentElement.className = ios ? 'is-ios' : 'is-pc';
   fetch('manifest.plist').then(function (r) { return r.text(); }).then(function (t) {
     var m = t.match(/<key>bundle-version<\/key>\s*<string>([^<]+)<\/string>/);
-    if (m) document.getElementById('ver').textContent = 'iPad 版 v' + m[1];
+    if (m) document.getElementById('ver').textContent = 'iPad／iPhone 版 v' + m[1];
   }).catch(function () {});
 </script>
 </body>
