@@ -71,4 +71,4 @@ node e2e/cross.mjs              # 手機開房、電腦加入的互通測試
 
 iPhone／iPad 版（ios/，XcodeGen）：在 Mac 上 `bash ios/sync.sh` 產生 Xcode 專案；`bash ios/build-ipa.sh`（要在 Mac 畫面的終端機執行）匯出 Ad Hoc 的 `xiaoke-checkers-ios.ipa`，上傳到 Release 後安裝頁就會裝到最新版（新版要改 `docs/ios/manifest.plist` 的 bundle-version）。
 
-推送到 `main` 後，GitHub Actions 會自動建置 Windows 與 macOS 安裝檔並發佈 Release（版本號取自 `package.json`）；程式內的「關於與更新」會從 Release 下載新版。
+推送到 `main` 後，GitHub Actions 會自動建置 Windows、macOS 安裝檔與 Android APK 並發佈 Release（版本號取自 `package.json`；APK 用 repo Secret `ANDROID_KEYSTORE_B64` 的金鑰簽章，並檢查和手機上的 App 是同一把）；程式內的「關於與更新」會從 Release 下載新版。

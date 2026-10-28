@@ -1,9 +1,9 @@
-name: 建置安裝檔（Windows / macOS）
+name: 建置安裝檔（Windows / macOS / Android）
 
 on:
   push:
     branches: [main]
-    paths: ['package.json', 'src/**', 'assets/**', 'build/**', '.github/workflows/build.yml']
+    paths: ['package.json', 'src/**', 'assets/**', 'build/**', 'android/**', 'mobile/**', 'scripts/build-mobile.mjs', '.github/workflows/build.yml']
   workflow_dispatch:
 
 permissions:
@@ -53,8 +53,50 @@ jobs:
             dist/*.dmg
           if-no-files-found: error
 
+  android:
+    name: Android（直立手機版 APK）
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      # 簽章憑證的 SHA-256（公開資訊）：每次都要用同一把金鑰，手機上的 App 才能直接更新
+      CERT_SHA256: 07dc04f55f6798169b348c163930bb30dc7a9b596c187d5234fc5627610935c5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - name: 簽章金鑰（repo Secret：ANDROID_KEYSTORE_B64）
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          [ -n "$KS" ] || { echo "::error::缺少 ANDROID_KEYSTORE_B64 Secret"; exit 1; }
+          echo "$KS" | base64 -d > android/xiaokecheckers.jks
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+      - name: 建置 APK
+        run: |
+          VER=$(node -p "require('./package.json').version")
+          python3 android/build.py
+          mv android/build/XiaokeCheckers.apk "XiaokeCheckers-$VER-android.apk"
+          ls -lh *.apk
+      - name: 確認簽章與版本
+        run: |
+          VER=$(node -p "require('./package.json').version")
+          APK="XiaokeCheckers-$VER-android.apk"
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          FP=$("$BT/apksigner" verify --print-certs "$APK" | grep -m1 "SHA-256 digest" | awk '{print $NF}')
+          [ "$FP" = "$CERT_SHA256" ] || { echo "::error::APK 簽章和手機上的 App 不一樣（$FP），裝了會無法更新"; exit 1; }
+          "$BT/aapt2" dump badging "$APK" | grep -m1 "versionName='$VER'" || { echo "::error::APK 版本號不對"; exit 1; }
+          rm -f android/xiaokecheckers.jks
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-android
+          path: '*.apk'
+          if-no-files-found: error
+
   release:
-    needs: build
+    needs: [build, android]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
