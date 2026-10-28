@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>安裝小柯跳棋（iPad）</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+  :root { --bg: #1b1410; --card: #2a1d12; --fg: #f3efe2; --dim: #b9c7bd; --gold: #e8c46a; --red: #c8302b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: radial-gradient(circle at 50% 0, #5a3a1d, var(--bg) 70%); color: var(--fg); font: 17px/1.6 -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; min-height: 100vh; }
+  main { max-width: 560px; margin: 0 auto; padding: 20px 16px 56px; text-align: center; }
+  .head { display: flex; align-items: center; justify-content: center; gap: 16px; text-align: left; }
+  img.icon { width: 88px; height: 88px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,.45); }
+  h1 { margin: 0; font-size: 24px; }
+  .ver { color: var(--gold); margin: 0; }
+  .install { margin-top: 22px; }
+  a.btn { display: block; padding: 22px 16px; border-radius: 14px; background: var(--red); color: #fff; font-size: 24px; font-weight: 700; text-decoration: none; box-shadow: 0 4px 0 #8c1f1b; }
+  a.btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #8c1f1b; }
+  a.sub { display: inline-block; margin-top: 14px; color: var(--dim); }
+  .card { margin-top: 30px; padding: 18px 20px; background: var(--card); border-radius: 14px; text-align: left; }
+  .card h2 { margin: 0 0 8px; font-size: 18px; color: var(--gold); }
+  ol { margin: 0; padding-left: 1.3em; }
+  li { margin: 6px 0; }
+  .pc { display: none; margin-top: 22px; padding: 18px; border-radius: 14px; background: #5b3a12; }
+  .pc img { width: 220px; height: 220px; background: #fff; border-radius: 10px; margin-top: 10px; }
+  html.is-pc .pc { display: block; }
+  html.is-ios a.sub { display: none; }
+  footer { margin-top: 34px; color: var(--dim); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="head">
+    <img class="icon" src="icon-512.png" alt="小柯跳棋圖示">
+    <div><h1>小柯機器人跳棋遊戲</h1><p class="ver" id="ver">iPad 版</p></div>
+  </div>
+  <div class="pc">這一頁要在 <b>iPad 的 Safari</b> 打開才能安裝。<br>用 iPad 的相機掃這個 QR Code：<br><img src="qr.png" alt="安裝頁 QR Code"></div>
+  <div class="install"><a class="btn" href="itms-services://?action=download-manifest&amp;url=https://achir1015.github.io/xiaoke-checkers/ios/manifest.plist">安裝到這台 iPad</a>
+  <a class="sub" href="https://github.com/achir1015/xiaoke-checkers/releases/latest/download/xiaoke-checkers-ios.ipa">下載 .ipa 檔（給 Mac 的 Finder／Apple Configurator 用）</a></div>
+  <div class="card">
+    <h2>安裝步驟</h2>
+    <ol>
+      <li>用 Safari 開這一頁，按上面紅色的「安裝到這台 iPad」，跳出視窗再按「安裝」。</li>
+      <li>不用下載 .ipa 檔，也不用另外的 App，按了就會自動安裝。</li>
+      <li>回到主畫面，等「小柯跳棋」圖示的進度跑完。iPad 請橫放使用（和電腦版同一個畫面）。</li>
+      <li>第一次打開若顯示「需要開發者模式」：到「設定 → 隱私權與安全性」，拉到最下面打開「開發者模式」→ 按「重新啟動」→ 開機解鎖後在跳出的視窗按「開啟」並輸入密碼。每台 iPad 只要做一次。</li>
+      <li>以後有新版本，在遊戲裡按「關於 → 檢查更新」就會回到這一頁更新，棋譜與設定都會保留。</li>
+    </ol>
+  </div>
+  <div class="card">
+    <h2>可以安裝的裝置</h2>
+    <p style="margin:0">App Store 上架前，這個 .ipa 只能裝在開發者登記過的 iPad 上；其他裝置按安裝會顯示「無法安裝」。</p>
+  </div>
+  <footer>系統開發：吳玉柱 先生 與 Claude AI Opus 5.5</footer>
+</main>
+<script>
+  // 電腦開啟時多顯示 QR Code 讓 iPad 掃；
+  // iPad 的 Safari 預設送電腦版 UA（Macintosh），要用觸控點數判斷
+  var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+  document.documentElement.className = ios ? 'is-ios' : 'is-pc';
+  fetch('manifest.plist').then(function (r) { return r.text(); }).then(function (t) {
+    var m = t.match(/<key>bundle-version<\/key>\s*<string>([^<]+)<\/string>/);
+    if (m) document.getElementById('ver').textContent = 'iPad 版 v' + m[1];
+  }).catch(function () {});
+</script>
+</body>
+</html>

@@ -96,6 +96,7 @@ async function init() {
   advisor.setHasKey(S.settings.advisor.hasKey);
 
   bindUI();
+  if (document.documentElement.classList.contains('touch')) setupTouch();
   renderHome();
   showScreen('home');
   setInterval(tickClock, 500);
@@ -154,6 +155,11 @@ function bindUI() {
     if (e.key === 'ArrowLeft') replayGo(S.replay.ply - 1);
     if (e.key === 'ArrowRight') replayGo(S.replay.ply + 1);
   });
+}
+
+// iPad（電腦版版面、觸控螢幕）：沒有滑鼠右鍵與滾輪，提示改成手指操作
+function setupTouch() {
+  $('.board-tip').textContent = '點棋子、再點落點（黃圈＝跳躍可到）．兩指拖曳旋轉．兩指捏合縮放';
 }
 
 function selectTab(name) {
@@ -1212,6 +1218,13 @@ async function checkUpdate(manual, statusEl) {
 }
 
 async function startUpdate(info) {
+  if (info.flavor === 'ios') {
+    const v = await modal('更新到新版本', h('div', {},
+      h('p', {}, `會用 Safari 打開安裝頁，按紅色的「安裝」就會更新到 v${info.latest}。`),
+      h('p', { class: 'muted small' }, '棋譜與設定都會保留。')), [{ label: '取消', value: false }, { label: '開啟安裝頁', value: true, primary: true }]);
+    if (v) xk.update.openPage();
+    return;
+  }
   if (!info.canInstall) {
     const v = await modal('下載新版本', h('p', {}, info.flavor === 'dev' ? '目前是開發版，請到 GitHub 下載安裝檔。' : '找不到這個平台的安裝檔，請到 GitHub 下載。'), [{ label: '取消', value: false }, { label: '開啟下載頁', value: true, primary: true }]);
     if (v) xk.update.openPage();

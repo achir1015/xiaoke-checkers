@@ -3,3 +3,8 @@ dist/
 e2e/out/
 __pycache__/
 *.log
+mobile/www/
+ios/web/
+ios/*.xcodeproj/
+ios/build/
+ios/XiaokeCheckers/Info.plist

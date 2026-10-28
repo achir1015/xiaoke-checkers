@@ -1,7 +1,7 @@
 {
   "name": "xiaoke-checkers",
   "productName": "小柯機器人跳棋遊戲",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "小柯機器人跳棋遊戲：3D 中國跳棋（2～3 人；與 AI、遠端邀請一位或兩位朋友＋觀棋＋語音、AI 對 AI、背景音樂、AI 軍師、自動更新）",
   "main": "src/main/main.js",
   "author": {
@@ -87,6 +87,7 @@
   "devDependencies": {
     "electron": "^33.4.11",
     "electron-builder": "^25.1.8",
+    "esbuild": "^0.24.2",
     "peer": "^1.0.2",
     "playwright-core": "^1.48.2"
   }

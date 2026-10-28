@@ -4,7 +4,8 @@
 
 https://github.com/user-attachments/assets/5b4cd40d-3b73-4479-a5a3-8311c30b73ae
 
-3D 中國跳棋桌面版（Windows 11／macOS）。
+3D 中國跳棋：桌面版（Windows 11／macOS）與 iPad 版。
+
 **系統開發：吳玉柱 先生 與 Claude AI Opus 5.5**
 
 ## 玩法
@@ -27,6 +28,14 @@ https://github.com/user-attachments/assets/5b4cd40d-3b73-4479-a5a3-8311c30b73ae
 
 其他：AI 軍師（本機 AI 分析，設定 Anthropic API 金鑰後由 Claude 白話解說）、20 首原創背景音樂（每首 3 分多鐘，可加入自己的音樂）、棋譜庫（自動收錄、重播、匯出、匯入）、版本自動更新。
 
+## iPad 版
+
+- 安裝頁：<https://achir1015.github.io/xiaoke-checkers/ios/>（用 iPad 的 Safari 打開，按紅色「安裝到這台 iPad」）。電腦開這一頁會顯示 QR Code 讓 iPad 掃。
+- iPad 請橫放，畫面和電腦版相同；單指點棋子與落點，兩指拖曳旋轉、捏合縮放。
+- 可以和電腦版互相遠端對賽、觀棋、語音聊天（同一套連線方式）。
+- App Store 上架前，只能裝在開發者登記過的 iPad；第一次打開若要求「開發者模式」，到「設定 → 隱私權與安全性」打開。
+- 遊戲裡「關於 → 檢查更新」會開安裝頁更新，棋譜與設定保留。
+
 ## AI
 
 參考 [Crazylitm/jumpchess](https://github.com/Crazylitm/jumpchess) 的說明：
@@ -47,6 +56,10 @@ npm run e2e          # 端對端測試（單機＋三人連線）
 npm run dist:win     # 建置 Windows 安裝檔
 npm run music        # 重新產生 20 首背景音樂（需要 Python numpy/scipy 與 ffmpeg）
 npm run icon         # 重新產生圖示
+node scripts/build-mobile.mjs   # 產生 iPad 版網頁 mobile/www
+node e2e/ipad.mjs               # 用 Chrome 模擬 iPad 測試
 ```
+
+iPad 版（ios/，XcodeGen）：在 Mac 上 `bash ios/sync.sh` 產生 Xcode 專案；`bash ios/build-ipa.sh`（要在 Mac 畫面的終端機執行）匯出 Ad Hoc 的 `xiaoke-checkers-ios.ipa`，上傳到 Release 後安裝頁就會裝到最新版（新版要改 `docs/ios/manifest.plist` 的 bundle-version）。
 
 推送到 `main` 後，GitHub Actions 會自動建置 Windows 與 macOS 安裝檔並發佈 Release（版本號取自 `package.json`）；程式內的「關於與更新」會從 Release 下載新版。

@@ -166,6 +166,7 @@ export class Board3D {
     ctl.maxDistance = 40;
     ctl.maxPolarAngle = Math.PI * 0.44;
     ctl.mouseButtons = { LEFT: null, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
+    ctl.touches = { ONE: null, TWO: THREE.TOUCH.DOLLY_ROTATE }; // iPad：單指點棋子、雙指縮放旋轉
 
     scene.add(new THREE.HemisphereLight('#fff4e0', '#3a2a1a', 0.7));
     const key = new THREE.DirectionalLight('#ffe9c8', 2.1);
@@ -191,6 +192,7 @@ export class Board3D {
     r.domElement.addEventListener('pointerdown', (e) => this.onPointerDown(e));
     r.domElement.addEventListener('pointermove', (e) => this.onPointerMove(e));
     r.domElement.addEventListener('contextmenu', (e) => e.preventDefault());
+    r.domElement.style.touchAction = 'none';
 
     this.ro = new ResizeObserver(() => this.resize());
     this.ro.observe(container);

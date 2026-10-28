@@ -107,4 +107,4 @@ class Advisor {
   }
 }
 
-module.exports = { Advisor };
+module.exports = { Advisor, SYSTEM };

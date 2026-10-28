@@ -1,0 +1,60 @@
+name: XiaokeCheckers
+options:
+  bundleIdPrefix: com.achir
+  deploymentTarget:
+    iOS: "17.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.1.0"
+    CURRENT_PROJECT_VERSION: "10100"
+targets:
+  XiaokeCheckers:
+    type: application
+    platform: iOS
+    sources:
+      - path: XiaokeCheckers
+      - path: web            # 和電腦版同一份遊戲網頁（sync.sh 從 ../mobile/www 複製進來），整個資料夾放進 App
+        type: folder
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.achir.xiaokecheckers
+        TARGETED_DEVICE_FAMILY: "2"       # iPad（含 iPad Pro）
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: 7BN6XJ59KP      # Apple Developer Program（個人）；換帳號就改這裡
+        GENERATE_INFOPLIST_FILE: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    info:
+      path: XiaokeCheckers/Info.plist
+      properties:
+        CFBundleDisplayName: 小柯跳棋
+        CFBundleDevelopmentRegion: zh_TW
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        ITSAppUsesNonExemptEncryption: false
+        UILaunchScreen:
+          UIColorName: ""
+        UIStatusBarHidden: true
+        UIViewControllerBasedStatusBarAppearance: false
+        UIUserInterfaceStyle: Dark
+        UIRequiresFullScreen: true
+        # iPad 橫放（電腦版版面：左邊棋手、中間棋盤、右邊軍師／對話／音樂）
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        NSMicrophoneUsageDescription: 與遠端棋友語音通話需要使用麥克風。
+        UIFileSharingEnabled: true
+schemes:
+  XiaokeCheckers:
+    build:
+      targets:
+        XiaokeCheckers: all
+    run:
+      config: Debug
+    archive:
+      config: Release
