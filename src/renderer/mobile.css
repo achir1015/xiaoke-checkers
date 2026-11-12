@@ -83,3 +83,20 @@ html.mobile .rec-table th, html.mobile .rec-table td { padding: 7px 6px; font-si
 html.mobile #toasts { left: 10px; right: 10px; bottom: 60px; }
 html.mobile .toast { max-width: none; }
 html.mobile .upd-box { min-width: 0; width: 92vw; }
+
+/* 遊戲說明（手機直立）：上面課程一排、棋盤、解說、按鈕 */
+html.mobile .guide { padding: 10px; }
+html.mobile .gd-head { flex-wrap: wrap; gap: 8px; }
+html.mobile .gd-head h2 { font-size: 20px; }
+html.mobile .gd-sub { display: none; }
+html.mobile .gd-body { display: flex; flex-direction: column; gap: 8px; }
+html.mobile .gd-list { flex-direction: row; overflow-x: auto; flex: none; scrollbar-width: none; }
+html.mobile .gd-list::-webkit-scrollbar { display: none; }
+html.mobile .gd-item { flex: 0 0 auto; padding: 6px 10px; font-size: 14px; }
+html.mobile .gd-main { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
+html.mobile .gd-board { order: 1; flex: 1; min-height: 220px; }
+html.mobile .gd-caption { order: 2; min-height: 96px; font-size: 16px; padding: 8px 12px; }
+html.mobile .gd-ctrl { order: 3; }
+html.mobile .gd-ctrl button, html.mobile .gd-ctrl select { padding: 6px 8px; font-size: 13px; }
+html.mobile .gd-status { order: 4; }
+html.mobile .rules-head .guide-btn { padding: 5px 8px; }

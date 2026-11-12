@@ -7,6 +7,7 @@ import { Room, PROTOCOL } from './net.js';
 import { MusicPlayer } from './music.js';
 import { AdvisorPanel } from './advisor-ui.js';
 import { sfx, setSfx } from './sfx.js';
+import { Guide } from './guide.js';
 
 const APP_NAME = '小柯機器人跳棋遊戲';
 const CREDIT = '系統開發：吳玉柱 先生 與 Claude AI Opus 5.5';
@@ -122,6 +123,7 @@ function idleBoard() {
 
 // ---------------- 畫面切換 ----------------
 function showScreen(name) {
+  if (S.screen === 'guide' && name !== 'guide' && guide) guide.stop();
   S.screen = name;
   $$('.screen').forEach((el) => el.classList.toggle('on', el.id === 'scr-' + name));
   if (name === 'game') setTimeout(() => board.resize(), 30);
@@ -185,6 +187,7 @@ function setupMobile() {
     if (document.body.classList.contains('sheet-open')) { document.body.classList.remove('sheet-open'); return true; }
     if (S.screen === 'game') { leaveGame(); return true; }
     if (S.screen === 'records') { showScreen('home'); return true; }
+    if (S.screen === 'guide') { guide.close(); return true; }
     return false;
   };
 }
@@ -272,12 +275,13 @@ function renderHome() {
       h('div', { class: 'hero-name' }, h('label', {}, '我的暱稱'), nameInput)),
     h('div', { class: 'mode-grid' }, cardAI, cardNet, cardAivai),
     h('div', { class: 'home-links' },
+      h('button', { id: 'btnGuide', class: 'guide-btn', onclick: () => openGuide() }, '📖 遊戲說明'),
       h('button', { onclick: () => showScreen('records') }, '📜 棋譜庫'),
       h('button', { onclick: () => openSettings() }, '⚙ 設定'),
       h('button', { onclick: () => { selectTab('music'); enterIdle(); } }, '♫ 背景音樂'),
       h('button', { id: 'btnAbout', onclick: () => openAbout() }, 'ℹ 關於與更新')),
     h('div', { class: 'card rules-box' },
-      h('h3', {}, '遊戲規則'),
+      h('div', { class: 'rules-head' }, h('h3', {}, '遊戲規則'), h('button', { class: 'guide-btn small', onclick: () => openGuide() }, '▶ 看語音動畫說明')),
       h('ul', {},
         h('li', {}, '六角星棋盤共 121 孔，最多三組參賽，各用一種顏色的 10 顆棋子，從自己的角出發。'),
         h('li', {}, '先把 10 顆棋子全部移到正對面的角就獲勝（對面角被填滿、且其中有自己的棋子也算贏）。'),
@@ -1213,6 +1217,15 @@ function replayAuto() {
 function stopReplayAuto() {
   if (S.replay && S.replay.timer) { clearInterval(S.replay.timer); S.replay.timer = 0; }
   const b = $('#rpPlay'); if (b) b.textContent = '▶';
+}
+
+// ---------------- 遊戲說明（語音＋動畫） ----------------
+let guide = null;
+function openGuide(lesson = 0) {
+  if (!guide) guide = new Guide($('#guideBody'), { settings: S.settings, save: (p) => saveSettings(p), onBack: () => showScreen('home') });
+  showScreen('guide');
+  guide.open(lesson);
+  window.__guide = guide; // 方便自動化測試
 }
 
 // ---------------- 關於與版本更新 ----------------

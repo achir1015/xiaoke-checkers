@@ -296,3 +296,50 @@ body:not(.mode-ai) .ai-only { display: none; }
 .rules-box ul { margin: 0; padding-left: 20px; }
 .turn-banner.s0 { color: #ffb3ab; } .turn-banner.s1 { color: #b6ffcf; } .turn-banner.s2 { color: #c6dcff; }
 .turn-banner.mine { color: #b6ffcf; }
+
+/* ---------- v1.3.0：遊戲說明（語音＋動畫） ---------- */
+.guide-btn { border-color: var(--gold) !important; color: var(--gold); }
+.rules-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.rules-head h3 { margin: 0 !important; }
+.guide { height: 100%; display: flex; flex-direction: column; padding: 14px 22px; gap: 10px; min-height: 0; background: radial-gradient(1200px 600px at 30% -10%, #4b2f17 0%, transparent 60%), var(--bg); }
+.gd-head { display: flex; align-items: center; gap: 16px; }
+.gd-head h2 { margin: 0; color: var(--gold); white-space: nowrap; }
+.gd-sub { margin-left: auto; }
+.gd-body { flex: 1; display: grid; grid-template-columns: 210px 1fr; gap: 16px; min-height: 0; }
+.gd-list { display: flex; flex-direction: column; gap: 6px; overflow: auto; }
+.gd-item { text-align: left; display: flex; gap: 10px; align-items: center; padding: 10px 12px; font-size: 16px; }
+.gd-item .n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: #1d140c; color: var(--gold); font-size: 13px; flex: none; }
+.gd-item.on { border-color: var(--gold); background: #4a2f16; color: var(--gold); }
+.gd-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(270px, 380px); grid-template-rows: auto auto 1fr; gap: 12px 18px; align-items: start; min-height: 0; }
+.gd-board { grid-column: 1; grid-row: 1 / span 3; height: 100%; min-height: 0; align-self: stretch; display: flex; justify-content: center; align-items: center; }
+.gd-caption { grid-column: 2; grid-row: 1; min-height: 150px; white-space: pre-line; font-size: 19px; line-height: 1.6; padding: 12px 18px; border-radius: 12px; background: #2a1d12; border: 1px solid var(--line); }
+.gd-caption.practice { border-color: #35c46b; box-shadow: 0 0 14px rgba(53,196,107,.35); }
+.gd-ctrl { grid-column: 2; grid-row: 2; display: flex; gap: 8px; flex-wrap: wrap; }
+.gd-ctrl button, .gd-ctrl select { flex: 1 1 auto; }
+.gd-status { grid-column: 2; grid-row: 3; min-height: 22px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.gd-answer { padding: 3px 10px; font-size: 13px; }
+@media (max-width: 1180px) { .gd-body { grid-template-columns: 160px 1fr; } .gd-item { font-size: 14px; padding: 8px; } .gd-caption { font-size: 17px; } .gd-sub { display: none; } }
+@media (max-width: 860px) { .gd-main { grid-template-columns: 1fr; grid-template-rows: auto minmax(320px, 1fr) auto auto; } .gd-board { grid-row: 2; } .gd-caption { grid-column: 1; grid-row: 1; min-height: 90px; } .gd-ctrl, .gd-status { grid-column: 1; } .gd-ctrl { grid-row: 3; } .gd-status { grid-row: 4; } }
+/* 動畫小棋盤 */
+.gb-svg { height: 100%; max-height: 100%; max-width: 100%; }
+.gb-bg { fill: #d9ae6c; stroke: #8a5a2a; stroke-width: 4; }
+.gb-star { fill: #f1e7d2; stroke: #fbf6ea; stroke-width: 10; stroke-linejoin: round; }
+.gb-lines line { stroke: rgba(70,45,25,.45); stroke-width: 1.4; }
+.gb-holes circle { fill: #3b2414; stroke: rgba(255,255,255,.35); stroke-width: 1.2; }
+.gm { transition: transform .38s cubic-bezier(.4,.1,.2,1); cursor: pointer; }
+.gm-shadow { fill: rgba(0,0,0,.3); }
+.gm-ball { stroke: rgba(0,0,0,.25); stroke-width: 1; }
+.gm.lift .gm-ball { filter: drop-shadow(0 9px 5px rgba(0,0,0,.45)); }
+.gm.lift { transition: transform .45s cubic-bezier(.3,.1,.2,1); }
+.gz { fill: rgba(255,224,102,.16); stroke: #ffd54f; stroke-width: 3; stroke-dasharray: 8 5; }
+.gk-sel { fill: none; stroke: #ffd54f; stroke-width: 4; }
+.gk-hint { fill: none; stroke: #ff7043; stroke-width: 4; stroke-dasharray: 6 4; }
+.gk-ok { fill: #2ecc71; opacity: .95; }
+.gk-jump { fill: rgba(255,213,79,.18); stroke: #ffc107; stroke-width: 3.5; }
+.gk-bad circle { fill: rgba(255,82,82,.25); stroke: #ff5252; stroke-width: 2; }
+.gk-bad path { stroke: #ff3b30; stroke-width: 4.5; stroke-linecap: round; }
+.gk-arrow { fill: none; stroke: #1e88e5; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; opacity: .8; }
+.gk-path { fill: none; stroke: #ffb300; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 8 6; opacity: .9; }
+.gk-good { fill: none; stroke: #2ecc71; stroke-width: 6; animation: gpulse .9s; }
+.gk-wrong { fill: none; stroke: #ff3b30; stroke-width: 6; animation: gpulse .9s; }
+@keyframes gpulse { from { opacity: 1; } to { opacity: 0; } }

@@ -52,7 +52,7 @@
     s.advisor = { model: settings.advisor.model, effort: settings.advisor.effort, hasKey: !!settings.advisor.apiKey, envKey: false };
     return s;
   }
-  var KEYS = ['playerName', 'level', 'players', 'stun', 'sfx', 'view', 'autoUpdate', 'aivai', 'netCfg'];
+  var KEYS = ['playerName', 'level', 'players', 'stun', 'sfx', 'view', 'autoUpdate', 'aivai', 'netCfg', 'guideVoice', 'guideRate'];
   function setSettings(p) {
     p = p || {};
     KEYS.forEach(function (k) { if (k in p) settings[k] = p[k]; });
@@ -258,6 +258,23 @@
 
   function openUrl(url) { if (isAndroid) A.openUrl(url); else if (isIOS) ios('open_url', [url]); else window.open(url, '_blank'); }
 
+  // ---------------- 語音（Android 的 WebView 沒有網頁語音，改用手機的文字轉語音；其他平台用 speechSynthesis） ----------------
+  var ttsWait = {}, ttsSeq = 0;
+  window.__xkTtsDone = function (id) { var f = ttsWait[id]; if (f) { delete ttsWait[id]; f(); } };
+  var tts = isAndroid && A.ttsSpeak ? {
+    available: function () { return !!A.ttsAvailable && A.ttsAvailable(); },
+    voiceName: function () { return A.ttsVoice ? A.ttsVoice() : '手機語音'; },
+    speak: function (text, rate) {
+      var id = 't' + (++ttsSeq);
+      return new Promise(function (res) {
+        ttsWait[id] = res;
+        A.ttsSpeak(String(text), rate || 1, id);
+        setTimeout(function () { window.__xkTtsDone(id); }, 3000 + String(text).length * 450);
+      });
+    },
+    stop: function () { A.ttsStop(); Object.keys(ttsWait).forEach(window.__xkTtsDone); },
+  } : null;
+
   // ---------------- 手機返回鍵（Android 原生呼叫） ----------------
   window.__xkBack = function () { return window.__xkjBack ? !!window.__xkjBack() : false; };
 
@@ -316,6 +333,7 @@
       onDelta: function (fn) { deltaFns.push(fn); return function () { deltaFns = deltaFns.filter(function (f) { return f !== fn; }); }; },
       onDone: function (fn) { doneFns.push(fn); return function () { doneFns = doneFns.filter(function (f) { return f !== fn; }); }; },
     },
+    tts: tts,
     mobile: mobile,
     touch: touch,
     android: isAndroid,

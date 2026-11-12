@@ -26,6 +26,8 @@ https://github.com/user-attachments/assets/5b4cd40d-3b73-4479-a5a3-8311c30b73ae
 | B 遠端對賽 | 建立房間取得 6 位數房號，邀請一位或兩位朋友參賽；空位開始時由 AI 代下；比賽開始後加入的人成為觀棋者；有人斷線由 AI 暫代、重新連線可接回座位；多人語音通話＋文字聊天 |
 | C AI 與 AI 對賽 | 2 或 3 個 AI 互相比賽，可調速度、暫停 |
 
+遊戲說明：首頁「📖 遊戲說明」有 10 課語音＋動畫講解（棋盤與目標、走一步、跳一顆、擋住了不能跳、連續跳、兩人與三人、怎樣算贏、致勝技巧、操作方式、三種遊戲模式），一課講完自動接下一課，附練習題；電腦用 Windows／macOS 的台灣中文語音，iPhone／iPad 用系統語音，Android 用手機的文字轉語音。
+
 其他：AI 軍師（本機 AI 分析，設定 Anthropic API 金鑰後由 Claude 白話解說）、20 首原創背景音樂（每首 3 分多鐘，可加入自己的音樂）、棋譜庫（自動收錄、重播、匯出、匯入）、版本自動更新。
 
 ## 手機與平板
@@ -67,6 +69,9 @@ node e2e/mobile.mjs             # 用 Chrome 模擬 Android 手機與 iPhone 測
 python android/build.py         # 建置 Android APK（不用 Gradle；debug install 會裝到接著的手機）
 node e2e/phone.mjs              # 實機測試（除錯版 APK）
 node e2e/cross.mjs              # 手機開房、電腦加入的互通測試
+node e2e/guide.mjs              # 遊戲說明（電腦版：語音、動畫、練習）
+node e2e/guide-mobile.mjs       # 遊戲說明（模擬 iPad、Android、iPhone）
+node e2e/phone-guide.mjs        # 遊戲說明實機測試（Android 原生語音）
 ```
 
 iPhone／iPad 版（ios/，XcodeGen）：在 Mac 上 `bash ios/sync.sh` 產生 Xcode 專案；`bash ios/build-ipa.sh`（要在 Mac 畫面的終端機執行）匯出 Ad Hoc 的 `xiaoke-checkers-ios.ipa`，上傳到 Release 後安裝頁就會裝到最新版（新版要改 `docs/ios/manifest.plist` 的 bundle-version）。

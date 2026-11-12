@@ -9,9 +9,13 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
+import android.speech.tts.Voice;
 import android.util.Base64;
 import android.webkit.JavascriptInterface;
 
@@ -26,12 +30,13 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
 /**
  * 網頁呼叫的 Android 功能（window.XiaokeAndroid）：
- * 匯出棋譜到「下載/小柯跳棋」、檢查更新與安裝新版、用瀏覽器開網址。
+ * 語音解說（文字轉語音）、匯出棋譜到「下載/小柯跳棋」、檢查更新與安裝新版、用瀏覽器開網址。
  * JavaScript 介面在背景執行緒執行，可以直接連網路；回傳值一律是 JSON 字串。
  */
 final class Bridge {
@@ -41,9 +46,13 @@ final class Bridge {
     final MainActivity a;
     final Map<String, Save> saves = new HashMap<>();
     volatile JSONObject updateStatus = st("idle", 0);
+    TextToSpeech tts;
+    volatile boolean ttsReady = false;
+    volatile String ttsVoiceName = "";
 
     Bridge(MainActivity a) {
         this.a = a;
+        initTts();
     }
 
     static final class Save { Uri uri; File file; OutputStream out; String shown; long size; }
@@ -71,7 +80,49 @@ final class Bridge {
     @JavascriptInterface
     public String appInfo() { return ok("name", a.getString(R.string.app_name), "version", version(a), "platform", "android", "sdk", Build.VERSION.SDK_INT, "model", Build.MODEL); }
 
-    void shutdown() { }
+    // ---- 語音解說（遊戲說明）：Android 的 WebView 沒有網頁語音，改用系統的文字轉語音 ----
+    void initTts() {
+        tts = new TextToSpeech(a.getApplicationContext(), status -> {
+            if (status != TextToSpeech.SUCCESS) return;
+            // 優先台灣中文，其次任何中文
+            Locale[] prefer = { Locale.TAIWAN, new Locale("zh", "TW"), Locale.TRADITIONAL_CHINESE, new Locale("yue", "HK"), Locale.CHINESE, Locale.SIMPLIFIED_CHINESE };
+            for (Locale l : prefer) {
+                int r = tts.isLanguageAvailable(l);
+                if (r >= TextToSpeech.LANG_AVAILABLE) { tts.setLanguage(l); ttsReady = true; break; }
+            }
+            try { Voice v = tts.getVoice(); if (v != null) ttsVoiceName = v.getName() + "（" + v.getLocale().toLanguageTag() + "）"; } catch (Exception ignored) { }
+            tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                @Override public void onStart(String id) { }
+                @Override public void onDone(String id) { done(id); }
+                @Override public void onError(String id) { done(id); }
+                @Override public void onStop(String id, boolean interrupted) { done(id); }
+            });
+        });
+    }
+
+    void done(String id) {
+        a.js("window.__xkTtsDone&&window.__xkTtsDone(" + JSONObject.quote(id) + ")");
+    }
+
+    @JavascriptInterface
+    public boolean ttsAvailable() { return ttsReady; }
+
+    @JavascriptInterface
+    public String ttsVoice() { return ttsVoiceName.isEmpty() ? "手機語音" : ttsVoiceName; }
+
+    @JavascriptInterface
+    public void ttsSpeak(String text, double rate, String id) {
+        if (!ttsReady) { done(id); return; }
+        tts.setSpeechRate((float) Math.max(0.5, Math.min(2.0, rate)));
+        Bundle p = new Bundle();
+        p.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, id);
+        tts.speak(text, TextToSpeech.QUEUE_FLUSH, p, id);
+    }
+
+    @JavascriptInterface
+    public void ttsStop() { if (tts != null) tts.stop(); }
+
+    void shutdown() { try { if (tts != null) { tts.stop(); tts.shutdown(); } } catch (Exception ignored) { } }
 
     // ---- 匯出棋譜：「下載/小柯跳棋」 ----
     @JavascriptInterface
