@@ -11,3 +11,4 @@ ios/XiaokeCheckers/Info.plist
 android/build/
 android/local.properties
 android/*.jks
+ios/Mac/Info.plist

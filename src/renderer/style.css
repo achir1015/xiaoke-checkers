@@ -343,3 +343,10 @@ body:not(.mode-ai) .ai-only { display: none; }
 .gk-good { fill: none; stroke: #2ecc71; stroke-width: 6; animation: gpulse .9s; }
 .gk-wrong { fill: none; stroke: #ff3b30; stroke-width: 6; animation: gpulse .9s; }
 @keyframes gpulse { from { opacity: 1; } to { opacity: 0; } }
+
+/* ---------- v1.4.0：連線對戰須知、封鎖並檢舉 ---------- */
+.block-btn { color: #ffb4a8; border-color: #8c3a2c; }
+.voicebar { flex-wrap: wrap; }
+.terms p { margin: 6px 0; line-height: 1.6; }
+.terms ul { margin: 6px 0; padding-left: 1.3em; line-height: 1.6; }
+.terms select { width: 100%; margin: 4px 0 8px; }

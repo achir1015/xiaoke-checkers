@@ -8,3 +8,5 @@
 *.plist text eol=lf
 *.applescript text eol=lf
 ios/project.yml text eol=lf
+ios/** text eol=lf
+ios/**/*.png binary

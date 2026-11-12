@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>技術支援｜小柯機器人跳棋遊戲</title>
+<link rel="apple-touch-icon" href="ios/icon-180.png">
+<style>
+  :root { --bg: #1b1410; --card: #2a1d12; --fg: #f3efe2; --dim: #c9bba6; --gold: #e8c46a; --red: #c8302b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: radial-gradient(circle at 50% 0, #5a3a1d, var(--bg) 70%); color: var(--fg); font: 17px/1.7 -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; min-height: 100vh; }
+  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 56px; }
+  .head { display: flex; align-items: center; gap: 16px; }
+  .head img { width: 72px; height: 72px; border-radius: 16px; }
+  h1 { margin: 0; font-size: 24px; }
+  h2 { color: var(--gold); font-size: 19px; margin: 0 0 6px; }
+  section { margin-top: 22px; padding: 16px 20px; background: var(--card); border-radius: 14px; }
+  section.alert { border: 2px solid var(--red); }
+  a { color: var(--gold); }
+  .dim { color: var(--dim); }
+  ol, ul { padding-left: 1.3em; margin: 6px 0; }
+  a.btn { display: inline-block; margin-top: 8px; padding: 10px 18px; border-radius: 10px; background: var(--red); color: #fff; text-decoration: none; font-weight: 700; }
+</style>
+</head>
+<body>
+<main>
+<div class="head"><img src="ios/icon-180.png" alt=""><div><h1>小柯機器人跳棋遊戲</h1><p class="dim" style="margin:0">技術支援</p></div></div>
+
+<section><h2>這是什麼</h2>
+<p>3D 立體中國跳棋：六角星棋盤、2～3 人對賽，可以和電腦 AI 對賽、邀請一位或兩位朋友連線對賽（文字與語音聊天，空位由 AI 代下，其他人可以觀棋），也能看 AI 與 AI 對賽。內建 20 首原創背景音樂、AI 軍師、遊戲說明（動畫與語音），每一局都會收錄成棋譜。</p></section>
+
+<section><h2>開始使用</h2>
+<ol>
+<li>首頁「與 AI 對賽」選 2 人或 3 人、選難度，按「開始對局」。</li>
+<li>點一下自己的棋子：綠色小點是走一步能到的孔，黃色圓圈是跳過去能到的孔，再點落點就會移動。</li>
+<li>先把 10 顆棋子全部移到正對面的角就獲勝。</li>
+<li>不會玩沒關係：按首頁的「📖 遊戲說明」，小柯會用動畫和語音一步一步教您，還有練習題。</li>
+</ol></section>
+
+<section><h2>和朋友連線對賽</h2>
+<ol>
+<li>一方在「遠端對賽」按「建立房間」，畫面出現 6 位數房號。</li>
+<li>把房號告訴朋友，朋友在「加入房間」輸入房號。可以邀請一位或兩位朋友，空位在開始時由 AI 代下；開始後才加入的人是觀棋者。</li>
+<li>iPhone、iPad、Mac、Android、Windows 都可以互相連線。</li>
+<li>連不上時：請確認各方都連上網路；公司或學校的網路若擋住點對點連線，可以改用手機網路試試。</li>
+</ol></section>
+
+<section id="report" class="alert"><h2>檢舉不當言行</h2>
+<p>連線對賽只會連到您分享房號的棋友。若有人在聊天或語音中有騷擾、辱罵、色情、暴力、歧視等不當言行：</p>
+<ol>
+<li>在對局畫面的「對話」分頁按「🚫 封鎖並檢舉」，選擇那位棋友：房主會把對方請出房間，參賽者會立即離開房間；之後對方無法再和您連線（可在「設定」解除封鎖）。</li>
+<li>到下方回報頁寫下發生的日期時間、對方暱稱與狀況（可附截圖）。開發者會在 24 小時內處理。</li>
+</ol>
+<a class="btn" href="https://github.com/achir1015/xiaoke-checkers/issues/new?title=%E6%AA%A2%E8%88%89%E4%B8%8D%E7%95%B6%E8%A8%80%E8%A1%8C&amp;labels=report">開啟回報頁</a>
+<p class="dim">聊天訊息與暱稱會自動過濾不雅字詞。本程式沒有帳號、沒有公開的聊天室，也不會保存聊天內容。</p></section>
+
+<section><h2>AI 軍師</h2>
+<p>沒有設定金鑰時，軍師用裝置上的 AI 提供建議（不連網）。想讓 Claude 用白話解說，可以在「設定」輸入自己的 Anthropic API 金鑰；第一次使用前會先詢問您是否同意把局面與問題送到 Anthropic。</p></section>
+
+<section><h2>聯絡我們</h2>
+<p>問題回報或建議：<a href="https://github.com/achir1015/xiaoke-checkers/issues">GitHub 問題回報</a></p>
+<p><a href="privacy.html">隱私權政策</a></p></section>
+
+<p class="dim">系統開發：吳玉柱 先生 與 Claude AI Opus 5.5</p>
+</main>
+</body>
+</html>

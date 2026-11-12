@@ -106,7 +106,8 @@ export class AdvisorPanel {
     let c;
     try { c = await this.buildContext(); } catch (e) { pending.textContent = '分析失敗：' + e.message; pending.classList.remove('thinking'); return; }
     if (c.mine && c.lines[0]) this.ctx().showHint(c.lines[0].move);
-    if (!this.hasKey) {
+    // 第一次把局面送給 Claude 之前要先同意（不同意就只用本機 AI）
+    if (!this.hasKey || (this.ctx().consent && !(await this.ctx().consent()))) {
       pending.classList.remove('thinking');
       pending.textContent = this.offlineAnswer(c);
       this.scroll();

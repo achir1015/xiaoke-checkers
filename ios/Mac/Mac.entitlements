@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Mac App Store 版必須開沙盒：
+     network.client：遠端對賽（PeerJS 配對伺服器、WebRTC）、Claude 軍師
+     network.server：App 裡的小型網頁伺服器（只聽 127.0.0.1，提供畫面給 WKWebView）
+     device.audio-input：與遠端棋友語音通話
+     files.user-selected：匯入棋譜、加入自己的音樂、匯出棋譜（使用者在視窗裡選的檔案） -->
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+	<key>com.apple.security.network.client</key>
+	<true/>
+	<key>com.apple.security.network.server</key>
+	<true/>
+	<key>com.apple.security.device.audio-input</key>
+	<true/>
+	<key>com.apple.security.files.user-selected.read-write</key>
+	<true/>
+</dict>
+</plist>

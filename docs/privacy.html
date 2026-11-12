@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>隱私權政策｜小柯機器人跳棋遊戲</title>
+<style>
+  :root { --bg: #1b1410; --card: #2a1d12; --fg: #f3efe2; --dim: #c9bba6; --gold: #e8c46a; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: radial-gradient(circle at 50% 0, #5a3a1d, var(--bg) 70%); color: var(--fg); font: 17px/1.7 -apple-system, "PingFang TC", "Noto Sans TC", sans-serif; min-height: 100vh; }
+  main { max-width: 720px; margin: 0 auto; padding: 24px 16px 56px; }
+  h1 { margin: 0 0 4px; font-size: 24px; }
+  h2 { color: var(--gold); font-size: 19px; margin: 0 0 6px; }
+  section { margin-top: 22px; padding: 16px 20px; background: var(--card); border-radius: 14px; }
+  a { color: var(--gold); }
+  .dim { color: var(--dim); }
+  ul { padding-left: 1.3em; margin: 6px 0; }
+</style>
+</head>
+<body>
+<main>
+<h1>小柯機器人跳棋遊戲　隱私權政策</h1>
+<p class="dim">生效日期：2026 年 11 月 12 日</p>
+
+<section><h2>我們不收集您的資料</h2>
+<p>小柯機器人跳棋遊戲沒有帳號、沒有廣告、沒有追蹤，也沒有分析工具。開發者沒有任何伺服器會收到您的資料。</p></section>
+
+<section><h2>存在您裝置上的資料</h2>
+<ul>
+<li>暱稱、遊戲設定、音量、遊戲說明的語音設定。</li>
+<li>棋譜（每一局的走法）。</li>
+<li>您自己加入的音樂。</li>
+<li>封鎖名單（您封鎖的棋友暱稱）。</li>
+<li>Anthropic API 金鑰（若您自行設定）。</li>
+</ul>
+<p>這些資料只存在您的裝置上。刪除 App 就會一起刪除。</p></section>
+
+<section><h2>連線對賽</h2>
+<p>和朋友連線對賽時，各方的裝置透過 WebRTC 點對點直接連線，傳送暱稱、走法、聊天文字與語音（語音要自己按「加入語音」才會開啟麥克風）。這些內容不會經過、也不會保存在開發者的伺服器。</p>
+<p>為了讓各方找到彼此，App 會使用公開的 PeerJS 配對伺服器（0.peerjs.com）交換連線資訊（房號與網路位址）；也會使用 Google、Cloudflare 的 STUN 伺服器取得對外的網路位址。這些服務不會收到聊天內容與棋局。</p>
+<p>麥克風只在您按「加入語音」之後使用。</p></section>
+
+<section><h2>遊戲說明的語音</h2>
+<p>遊戲說明使用裝置內建的文字轉語音朗讀解說，不會把內容傳到開發者的伺服器。</p></section>
+
+<section><h2>AI 軍師（Claude）</h2>
+<p>只有在您自行輸入 Anthropic API 金鑰、並在第一次使用時按「同意」之後，App 才會把「目前的棋盤局面、各方進度、本機 AI 的分析與您輸入的問題」用您的金鑰送到 Anthropic 公司的 Claude 服務，以取得解說。不會送出您的聯絡資料。Anthropic 依其<a href="https://www.anthropic.com/legal/privacy">隱私權政策</a>處理這些資料。</p>
+<p>沒有設定金鑰或不同意時，軍師只使用裝置上的 AI，不會連網。</p></section>
+
+<section><h2>兒童隱私</h2>
+<p>本 App 不收集任何人的個人資料，包括兒童。</p></section>
+
+<section><h2>聯絡我們</h2>
+<p>對隱私權政策有疑問：<a href="https://github.com/achir1015/xiaoke-checkers/issues">GitHub 問題回報</a>，或參考<a href="support.html">技術支援</a>。</p></section>
+<p class="dim">開發者：YU-JUH WU（吳玉柱）</p>
+</main>
+</body>
+</html>

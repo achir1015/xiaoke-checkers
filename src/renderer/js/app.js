@@ -8,9 +8,12 @@ import { MusicPlayer } from './music.js';
 import { AdvisorPanel } from './advisor-ui.js';
 import { sfx, setSfx } from './sfx.js';
 import { Guide } from './guide.js';
+import { filterText, isBlocked } from './safety.js';
 
 const APP_NAME = '小柯機器人跳棋遊戲';
 const CREDIT = '系統開發：吳玉柱 先生 與 Claude AI Opus 5.5';
+const SUPPORT_URL = 'https://achir1015.github.io/xiaoke-checkers/support.html';
+const STORE = !!(window.xk && xk.store); // App Store 版：由 App Store 更新
 const SPEEDS = [['fast', '快', 300], ['normal', '一般', 900], ['slow', '慢', 1800]];
 
 // ---------------- AI（背景執行緒） ----------------
@@ -93,6 +96,7 @@ async function init() {
     mySeat: S.mySeat,
     names: S.seats.map((s) => s.name),
     analyze: (state, lines) => engineAna.analyze(state, lines, 3),
+    consent: () => ensureClaudeConsent(),
     showHint: (m) => showHint(m),
   }));
   advisor.setHasKey(S.settings.advisor.hasKey);
@@ -106,7 +110,7 @@ async function init() {
   document.addEventListener('pointerdown', () => sfx.resume(), { once: true });
   window.__xkc = S; // 方便自動化測試
   window.__xkcBoard = board;
-  if (S.settings.autoUpdate !== false && S.info.packaged && !S.info.profile) setTimeout(() => checkUpdate(false), 5000);
+  if (!STORE && S.settings.autoUpdate !== false && S.info.packaged && !S.info.profile) setTimeout(() => checkUpdate(false), 5000);
 }
 
 async function saveSettings(patch) {
@@ -145,6 +149,7 @@ function bindUI() {
   $('#miniMusic').onclick = () => { selectTab('music'); music.toggle(); };
   $$('.tab').forEach((t) => { t.onclick = () => { t.classList.remove('ping'); selectTab(t.dataset.tab); }; });
   $('#chatSend').onclick = () => sendChat();
+  $('#btnBlock').onclick = () => blockPlayer();
   $('#chatInput').onkeydown = (e) => { if (e.key === 'Enter') sendChat(); };
   $('#btnVoice').onclick = () => toggleVoice();
   $('#btnMute').onclick = () => toggleMute();
@@ -279,7 +284,7 @@ function renderHome() {
       h('button', { onclick: () => showScreen('records') }, '📜 棋譜庫'),
       h('button', { onclick: () => openSettings() }, '⚙ 設定'),
       h('button', { onclick: () => { selectTab('music'); enterIdle(); } }, '♫ 背景音樂'),
-      h('button', { id: 'btnAbout', onclick: () => openAbout() }, 'ℹ 關於與更新')),
+      h('button', { id: 'btnAbout', onclick: () => openAbout() }, STORE ? 'ℹ 關於' : 'ℹ 關於與更新')),
     h('div', { class: 'card rules-box' },
       h('div', { class: 'rules-head' }, h('h3', {}, '遊戲規則'), h('button', { class: 'guide-btn small', onclick: () => openGuide() }, '▶ 看語音動畫說明')),
       h('ul', {},
@@ -584,6 +589,10 @@ async function leaveGame() {
     const ok = await modal('離開對局', msg, [{ label: '留下', value: false }, { label: '離開', value: true, primary: true }]);
     if (!ok) return;
   }
+  await exitGame();
+}
+
+async function exitGame() {
   await saveUnfinished();
   closeNet();
   stopReplayAuto();
@@ -741,6 +750,7 @@ function renderMembers() {
 }
 
 async function hostRoom(cfg) {
+  if (!(await ensureNetTerms())) return;
   closeNet();
   netWait(h('span', {}, '正在建立房間…'));
   const room = new Room(S.settings);
@@ -828,7 +838,14 @@ async function onHostMsg(id, m) {
   switch (m.t) {
     case 'hello': {
       if (m.ver !== PROTOCOL) { S.room.sendTo(id, { t: 'old', text: '雙方程式版本不同，請先更新到最新版。' }); setTimeout(() => S.room.kick(id), 400); return; }
-      const name = String(m.name || '棋友').slice(0, 16);
+      const name = filterText(String(m.name || '棋友').slice(0, 16));
+      if (isBlocked(S.settings.blocked, name)) {
+        // 已封鎖的棋友：拒絕連線
+        S.room.sendTo(id, { t: 'old', text: '對方目前無法和您連線。' });
+        setTimeout(() => S.room && S.room.kick(id), 400);
+        if (S.screen === 'game') chatSys(`已拒絕封鎖名單裡的「${name}」加入`);
+        return;
+      }
       let seat = -1;
       if (!S.net.started) {
         for (let s = 1; s < S.net.n; s++) if (!memberOfSeat(s)) { seat = s; break; }
@@ -867,7 +884,7 @@ async function onHostMsg(id, m) {
       break;
     case 'chat': {
       if (!mem) return;
-      const text = String(m.text || '').slice(0, 500);
+      const text = filterText(String(m.text || '').slice(0, 500));
       S.room.send({ t: 'chat', name: mem.name, seat: mem.seat, text }, id);
       chatLine(mem.name, mem.seat, text, false);
       break;
@@ -901,6 +918,7 @@ function onMemberLost(id, reason) {
 }
 
 async function joinRoom(code) {
+  if (!(await ensureNetTerms())) return;
   closeNet();
   netWait(h('span', {}, '正在連線…'));
   const room = new Room(S.settings);
@@ -938,13 +956,22 @@ async function onGuestMsg(m) {
       else netWait(h('span', { class: 'err' }, '房主已關閉房間'));
       break;
     case 'welcome': S.net.mySeat = m.seat; break;
-    case 'roster':
+    case 'roster': {
       S.net.members = m.members || [];
+      const hostMem = S.net.members.find((x) => x.seat === 0);
+      if (hostMem && isBlocked(S.settings.blocked, hostMem.name)) {
+        // 房主在封鎖名單裡：不加入
+        closeNet();
+        netWait(h('span', { class: 'err' }, `房主「${hostMem.name}」在您的封鎖名單裡，已離開房間（可在「設定」解除封鎖）。`));
+        if (S.mode === 'net') { await exitGame(); toast('已離開封鎖名單裡的房間', 'info'); }
+        return;
+      }
       S.net.n = m.n;
       S.net.aiLevel = m.aiLevel;
       renderLobby();
       renderMembers();
       break;
+    }
     case 'start':
       startNetGame(m);
       break;
@@ -970,7 +997,7 @@ async function onGuestMsg(m) {
     case 'seat-back':
       if (S.seats[m.seat]) { Object.assign(S.seats[m.seat], { kind: m.seat === S.mySeat ? 'me' : 'remote', left: false, name: m.name }); chatSys(`${m.name} 回來了，接回${SEAT_NAMES[m.seat]}`); updateGameUI(); }
       break;
-    case 'chat': chatLine(m.name, m.seat, String(m.text || '').slice(0, 500), false); break;
+    case 'chat': chatLine(filterText(m.name), m.seat, filterText(String(m.text || '').slice(0, 500)), false); break;
   }
 }
 
@@ -997,9 +1024,72 @@ function chatSys(text) {
   log.append(h('div', { class: 'chat-msg sys' }, text));
   log.scrollTop = log.scrollHeight;
 }
+// ---------------- 連線對戰的安全：須知、封鎖、檢舉（App Store 準則 1.2） ----------------
+// 第一次連線對戰前：說明只和分享房號的朋友對戰、禁止不當言行、可以封鎖檢舉
+async function ensureNetTerms() {
+  if (S.settings.netTermsOK) return true;
+  const ok = await modal('連線對戰須知', h('div', { class: 'terms' },
+    h('p', {}, '連線對戰只會連到您分享房號（或朋友給您房號）的棋友，沒有陌生人配對。對局中可以用文字和語音聊天。'),
+    h('ul', {},
+      h('li', {}, '請友善下棋。禁止騷擾、辱罵、色情、暴力、歧視等不當言行，違反者零容忍。'),
+      h('li', {}, '聊天訊息和暱稱會自動過濾不雅字詞。'),
+      h('li', {}, '遇到不當言行，可在「對話」分頁按「🚫 封鎖並檢舉」：房主可以把對方請出房間，參賽者會立即離開；之後拒絕這位棋友連線，並可回報給開發者（24 小時內處理）。'),
+      h('li', {}, '語音通話要自己按「加入語音」才會開麥克風，隨時可以離開或靜音。')),
+    h('p', { class: 'muted small' }, '按「同意」表示您同意遵守以上規範。')),
+    [{ label: '不同意', value: false }, { label: '同意', value: true, primary: true }]);
+  if (ok) await saveSettings({ netTermsOK: true });
+  return !!ok;
+}
+
+async function blockPlayer() {
+  if (S.mode !== 'net' || !S.net || !S.room) return;
+  const others = S.net.members.filter((m) => m.id !== S.room.myId);
+  if (!others.length) { toast('房間裡沒有其他棋友', 'info'); return; }
+  const sel = h('select', { id: 'blockWho' }, others.map((m) => h('option', { value: m.id }, `${m.name}${m.seat >= 0 ? `（${SEAT_NAMES[m.seat]}）` : '（觀棋）'}`)));
+  const host = S.net.role === 'host';
+  const v = await modal('封鎖並檢舉', h('div', { class: 'terms' },
+    h('p', {}, '要封鎖哪一位棋友？'), sel,
+    h('p', {}, host ? '封鎖後會把對方請出房間（座位改由 AI 代下），之後這位棋友無法再加入您的房間。' : '封鎖後您會立即離開這個房間、結束語音通話，之後不會再加入這位棋友開的房間。'),
+    h('p', {}, '若對方有不當言行，按「封鎖並檢舉」會開啟回報頁，寫下發生的時間與狀況，開發者會在 24 小時內處理。')),
+    [{ label: '取消', value: 0 }, { label: '只封鎖', value: 1 }, { label: '封鎖並檢舉', value: 2, primary: true }]);
+  if (!v) return;
+  const target = others.find((m) => m.id === sel.value) || others[0];
+  const name = target.name;
+  const blocked = [...(S.settings.blocked || []).filter((b) => (b.name || b) !== name), { name, date: new Date().toISOString().slice(0, 10) }].slice(-200);
+  await saveSettings({ blocked });
+  if (host) {
+    S.room.sendTo(target.id, { t: 'old', text: '房主已結束與您的連線。' });
+    closeCall(target.id);
+    setTimeout(() => { if (S.room) { S.room.kick(target.id); queueNet(() => onMemberLost(target.id, '已被封鎖')); } }, 300);
+  } else {
+    await exitGame();
+  }
+  toast(`已封鎖「${name}」`, 'ok');
+  if (v === 2) xk.openExternal(SUPPORT_URL + '#report');
+}
+
+function blockedRow() {
+  const n = (S.settings.blocked || []).length;
+  const out = h('div', { class: 'inline' }, h('span', { class: 'muted small' }, n ? `${n} 位：${S.settings.blocked.map((b) => b.name || b).slice(-5).join('、')}` : '沒有'));
+  if (n) out.append(h('button', { onclick: async (e) => { await saveSettings({ blocked: [] }); e.target.closest('.inline').firstChild.textContent = '沒有'; e.target.remove(); toast('已解除全部封鎖', 'ok'); } }, '解除全部封鎖'));
+  return out;
+}
+
+// 第一次請 Claude 解說前：說明會把局面送到 Anthropic（App Store 準則 5.1.2）
+async function ensureClaudeConsent() {
+  if (S.settings.claudeConsent) return true;
+  const ok = await modal('使用 Claude AI 軍師', h('div', { class: 'terms' },
+    h('p', {}, 'Claude 軍師會把「目前的棋盤局面、各方進度、本機 AI 的分析」和「您輸入的問題」，用您自己的 Anthropic API 金鑰送到 Anthropic 公司的 Claude 服務，產生白話解說。'),
+    h('p', {}, '不會送出您的聯絡資料或其他個人資料（棋盤上會出現各方的暱稱）；本程式的開發者也收不到這些內容。Anthropic 依其隱私權政策處理 API 資料。'),
+    h('p', { class: 'muted small' }, '不同意的話，軍師仍會用裝置上的 AI 提供建議（不連網）。')),
+    [{ label: '不同意', value: false }, { label: '同意並使用', value: true, primary: true }]);
+  await saveSettings({ claudeConsent: !!ok });
+  return !!ok;
+}
+
 function sendChat() {
   const inp = $('#chatInput');
-  const text = inp.value.trim();
+  const text = filterText(inp.value.trim());
   if (!text || !S.room || !S.room.connected) return;
   if (S.net.role === 'host') S.room.send({ t: 'chat', name: myName(), seat: S.net.mySeat, text });
   else S.room.send({ t: 'chat', text });
@@ -1230,17 +1320,19 @@ function openGuide(lesson = 0) {
 
 // ---------------- 關於與版本更新 ----------------
 async function openAbout() {
-  const status = h('div', { class: 'upd-status muted' }, '正在檢查是否有新版本…');
+  const status = h('div', { class: 'upd-status muted' }, STORE ? '新版本由 App Store 自動更新。' : '正在檢查是否有新版本…');
   const body = h('div', { class: 'about' },
     h('div', { class: 'about-head' }, h('div', { class: 'hero-marbles small' }, h('i'), h('i'), h('i')),
-      h('div', {}, h('h2', {}, APP_NAME), h('div', { class: 'muted' }, `版本 v${S.info.version}　（${S.info.platform === 'darwin' ? 'macOS' : S.info.platform === 'win32' ? 'Windows' : S.info.platform}）`))),
+      h('div', {}, h('h2', {}, APP_NAME), h('div', { class: 'muted' }, `版本 v${S.info.version}　（${S.info.platform === 'darwin' ? 'macOS' : S.info.platform === 'win32' ? 'Windows' : S.info.platform === 'ios' ? 'iPhone／iPad' : S.info.platform === 'android' ? 'Android' : S.info.platform}）`))),
     h('p', { class: 'credit-line' }, CREDIT),
     h('p', { class: 'muted small' }, '3D 中國跳棋：2～3 人對戰；與 AI 對賽、遠端邀請一位或兩位朋友參賽（空位 AI 代下、可觀棋、語音與文字聊天）、AI 與 AI 對賽；20 首原創背景音樂；AI 軍師；自動收錄棋譜。'),
     h('p', { class: 'muted small' }, 'AI 演算法參考：github.com/Crazylitm/jumpchess　棋盤參考：github.com/ghh3809/Chinese-Checkers'),
-    h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: S.settings.autoUpdate !== false, onchange: (e) => saveSettings({ autoUpdate: e.target.checked }) }), ' 開啟程式時自動檢查新版本'),
-    status);
-  const p = modal('關於與更新', body, [{ label: '關閉', value: false, primary: true }]);
-  checkUpdate(true, status);
+    STORE ? null : h('label', { class: 'chk' }, h('input', { type: 'checkbox', checked: S.settings.autoUpdate !== false, onchange: (e) => saveSettings({ autoUpdate: e.target.checked }) }), ' 開啟程式時自動檢查新版本'),
+    status,
+    h('p', { class: 'small' }, h('a', { href: '#', onclick: (e) => { e.preventDefault(); xk.openExternal(SUPPORT_URL); } }, '技術支援與檢舉'), '　',
+      h('a', { href: '#', onclick: (e) => { e.preventDefault(); xk.openExternal(SUPPORT_URL.replace('support', 'privacy')); } }, '隱私權政策')));
+  const p = modal(STORE ? '關於' : '關於與更新', body, [{ label: '關閉', value: false, primary: true }]);
+  if (!STORE) checkUpdate(true, status);
   await p;
 }
 
@@ -1333,9 +1425,10 @@ async function openSettings() {
     row('我的暱稱', f.name),
     row('音效', h('label', { class: 'chk' }, f.sfx, ' 彈珠落孔、跳躍音效')),
     row('背景音樂', h('label', { class: 'chk' }, f.autoplay, ' 開啟程式後自動播放')),
-    row('版本更新', h('label', { class: 'chk' }, f.autoUpdate, ' 開啟程式時自動檢查新版本')),
+    STORE ? row(`目前版本 v${S.info.version}`, h('div', { class: 'muted small' }, '新版本由 App Store 自動更新。')) : row('版本更新', h('label', { class: 'chk' }, f.autoUpdate, ' 開啟程式時自動檢查新版本')),
+    row('已封鎖的棋友', blockedRow()),
     h('h4', {}, 'AI 軍師（Claude）'),
-    row('Anthropic API 金鑰', f.key, s.advisor.envKey && !s.advisor.hasKey ? '已偵測到環境變數 ANTHROPIC_API_KEY。' : '金鑰會加密存在本機，只用來呼叫 Claude。沒有金鑰時軍師仍會提供本機 AI 的建議。'),
+    row('Anthropic API 金鑰', f.key, s.advisor.envKey && !s.advisor.hasKey ? '已偵測到環境變數 ANTHROPIC_API_KEY。' : '金鑰只存在本機，只用來呼叫 Claude。使用時會把棋盤局面與您的問題送到 Anthropic；沒有金鑰時軍師仍會提供本機 AI 的建議。'),
     row('模型', f.model),
     row('思考深度', f.effort),
     h('div', { class: 'set-row' }, h('label', {}, ''), h('button', { onclick: async () => { testOut.textContent = '測試中…'; await applySettings(f); const r = await xk.advisor.test(); testOut.textContent = r.ok ? `✅ ${r.text}` : `❌ ${r.error}`; } }, '測試金鑰'), testOut),

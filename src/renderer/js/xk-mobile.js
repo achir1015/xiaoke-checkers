@@ -8,14 +8,19 @@
   var A = window.XiaokeAndroid || null;
   var isAndroid = !!A;
   var isIOS = !!(window.XiaokeIOS && window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.xkj);
+  // XiaokeIOS 可以是物件：{ store: App Store 版（不檢查 GitHub 新版）, mac: Mac App Store 版（電腦版版面） }
+  var IOSI = isIOS && typeof window.XiaokeIOS === 'object' ? window.XiaokeIOS : {};
+  var isMac = !!IOSI.mac;
+  var store = !!IOSI.store;
   function ios(cmd, args) { return window.webkit.messageHandlers.xkj.postMessage({ cmd: cmd, args: args || [] }); }
   // 手機（Android、iPhone）直立版面：html.mobile；iPad 的 WebView 用電腦版 UA（Macintosh），走電腦版版面＋html.touch
   var ua = navigator.userAgent || '';
-  var mobile = isAndroid || /Android|iPhone|Mobile/i.test(ua) || /[?&]mobile=1/.test(location.search);
-  var touch = mobile || isIOS || navigator.maxTouchPoints > 1;
+  var mobile = !isMac && (isAndroid || /Android|iPhone|Mobile/i.test(ua) || /[?&]mobile=1/.test(location.search));
+  var touch = !isMac && (mobile || isIOS || navigator.maxTouchPoints > 1);
   if (mobile) document.documentElement.classList.add('mobile');
   else if (touch) document.documentElement.classList.add('touch');
-  document.documentElement.classList.add(isAndroid ? 'android' : isIOS ? 'ios' : 'webapp');
+  document.documentElement.classList.add(isAndroid ? 'android' : isMac ? 'mac' : isIOS ? 'ios' : 'webapp');
+  if (store) document.documentElement.classList.add('store');
 
   var REPO = 'achir1015/xiaoke-checkers';
   var IOS_INSTALL_PAGE = 'https://achir1015.github.io/xiaoke-checkers/ios/';
@@ -52,7 +57,7 @@
     s.advisor = { model: settings.advisor.model, effort: settings.advisor.effort, hasKey: !!settings.advisor.apiKey, envKey: false };
     return s;
   }
-  var KEYS = ['playerName', 'level', 'players', 'stun', 'sfx', 'view', 'autoUpdate', 'aivai', 'netCfg', 'guideVoice', 'guideRate'];
+  var KEYS = ['playerName', 'level', 'players', 'stun', 'sfx', 'view', 'autoUpdate', 'aivai', 'netCfg', 'guideVoice', 'guideRate', 'netTermsOK', 'blocked', 'claudeConsent'];
   function setSettings(p) {
     p = p || {};
     KEYS.forEach(function (k) { if (k in p) settings[k] = p[k]; });
@@ -157,6 +162,8 @@
   }
   function checkUpdate() {
     var cur = appVersion();
+    // App Store 版由 App Store 更新，不連 GitHub
+    if (store) return Promise.resolve({ current: cur, latest: cur, newer: false, notes: '', page: '', asset: null, flavor: 'store', canInstall: false });
     if (isAndroid) {
       return new Promise(function (res, rej) {
         setTimeout(function () {
@@ -281,7 +288,7 @@
   window.xk = {
     settings: { get: function () { return Promise.resolve(pub()); }, set: function (p) { return Promise.resolve(setSettings(p)); } },
     sys: {
-      info: function () { return Promise.resolve({ platform: isAndroid ? 'android' : isIOS ? 'ios' : 'web', arch: '', version: appVersion(), packaged: isAndroid || isIOS, profile: '', electron: '', mobile: mobile }); },
+      info: function () { return Promise.resolve({ platform: isAndroid ? 'android' : isMac ? 'darwin' : isIOS ? 'ios' : 'web', arch: '', version: appVersion(), packaged: isAndroid || isIOS, store: store, profile: '', electron: '', mobile: mobile }); },
       askMicrophone: function () { return Promise.resolve(true); },
     },
     win: { attention: function () { try { if (navigator.vibrate) navigator.vibrate([120, 60, 120]); } catch (e) { /* 不支援 */ } return Promise.resolve(); } },
@@ -338,5 +345,7 @@
     touch: touch,
     android: isAndroid,
     ios: isIOS,
+    mac: isMac,
+    store: store,
   };
 })();

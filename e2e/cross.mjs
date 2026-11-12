@@ -45,10 +45,10 @@ const boardOf = (page) => page.evaluate(() => Array.from(window.__xkc.game.board
 
 try {
   await D.waitForSelector('#btnHost', { timeout: 30000 });
-  await D.evaluate(async () => { window.__xkc.settings = await window.xk.settings.set({ playerName: '電腦棋友', music: { autoplay: false }, sfx: false }); });
+  await D.evaluate(async () => { window.__xkc.settings = await window.xk.settings.set({ playerName: '電腦棋友', music: { autoplay: false }, sfx: false, netTermsOK: true }); });
   await P.reload();
   await waitOn(P, () => window.__xkc && document.querySelector('#btnHost'));
-  await P.evaluate(async () => { window.__xkc.settings = await window.xk.settings.set({ playerName: '手機棋友', music: { autoplay: false }, server: { mode: 'public' } }); });
+  await P.evaluate(async () => { window.__xkc.settings = await window.xk.settings.set({ playerName: '手機棋友', music: { autoplay: false }, server: { mode: 'public' }, netTermsOK: true }); });
 
   // 手機建立 2 人房間
   await P.evaluate(() => { document.querySelector('.mode-card:nth-child(2) .segbtn[data-v="2"]').click(); document.querySelector('#btnHost').click(); });

@@ -30,7 +30,7 @@ async function launch(profile, name) {
   win.on('pageerror', (e) => errors.push('[pageerror] ' + e.message));
   await win.waitForSelector('#btnHost', { timeout: 30000 });
   await win.evaluate(async ({ port, name }) => {
-    window.__xkc.settings = await window.xk.settings.set({ playerName: name, server: { mode: 'custom', host: '127.0.0.1', port, path: '/', secure: false }, music: { autoplay: false }, sfx: false });
+    window.__xkc.settings = await window.xk.settings.set({ playerName: name, server: { mode: 'custom', host: '127.0.0.1', port, path: '/', secure: false }, music: { autoplay: false }, sfx: false, netTermsOK: true });
   }, { port: PORT, name });
   await win.evaluate(() => document.querySelector('#btnAbout') && 0);
   const waitFor = async (fn, arg, ms = 25000) => {
@@ -176,6 +176,31 @@ try {
   check('A 與藍方繼續比賽', (await A.win.evaluate(() => !window.__xkc.game.result)));
   await A.win.waitForTimeout(1000);
   await D.win.screenshot({ path: path.join(outDir, 'net-5-after-resign-D.png') });
+
+  // 封鎖並檢舉：房主 A 封鎖觀棋者 D → D 被請出房間，之後再加入會被拒絕
+  await A.win.evaluate(() => document.querySelector('.tab[data-tab="chat"]').click());
+  await A.win.click('#btnBlock');
+  await A.win.waitForSelector('#blockWho');
+  const dId = await A.win.evaluate(() => window.__xkc.net.members.find((m) => m.name === '阿德').id);
+  await A.win.selectOption('#blockWho', dId);
+  await A.win.click('.modal-btns button:has-text("只封鎖")');
+  await A.waitFor(() => !window.__xkc.net.members.some((m) => m.name === '阿德'), null, 10000);
+  check('房主封鎖觀棋者：對方被請出房間', true);
+  check('封鎖名單記下暱稱', await A.win.evaluate(() => (window.__xkc.settings.blocked || []).some((b) => b.name === '阿德')));
+  await D.waitFor(() => /無法和您連線|結束與您的連線|離開/.test(document.querySelector('#turnBanner').textContent + document.querySelector('#chatLog').textContent), null, 15000);
+  check('被封鎖的人收到通知', true);
+  await D.win.evaluate(() => { document.querySelector('#btnHome').click(); });
+  await D.win.waitForTimeout(500);
+  await D.win.evaluate(() => { const b = document.querySelector('.modal-btns .primary'); if (b) b.click(); });
+  await D.waitFor(() => document.querySelector('#scr-home').classList.contains('on'));
+  await D.win.fill('#joinCode', code);
+  await D.win.click('#btnJoin');
+  await D.waitFor(() => /無法和您連線/.test((document.querySelector('#netWait') || {}).textContent || ''), null, 20000);
+  check('被封鎖的人再加入會被拒絕', !(await A.win.evaluate(() => window.__xkc.net.members.some((m) => m.name === '阿德'))));
+  // 聊天過濾
+  await B.win.evaluate(() => { const i = document.querySelector('#chatInput'); i.value = '你這個白痴'; document.querySelector('#chatSend').click(); });
+  await A.waitFor(() => [...document.querySelectorAll('.chat-msg')].some((m) => m.textContent.includes('你這個＊＊')), null, 10000);
+  check('聊天自動過濾不雅字詞', true);
 } catch (e) {
   fail++;
   console.log('✘ 例外：', e.message);
